@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, h, onMounted, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   editPictureUsingPost,
-
   getPictureVoByIdUsingGet,
-  listPictureTagCategoryUsingGet
+  listPictureTagCategoryUsingGet,
 } from '@/api/pictureController.ts'
 
 import { useRoute, useRouter } from 'vue-router'
 import PictureUpload from '@/components/PictureUpload.vue'
+import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
+import ImageCropper from '@/components/ImageCropper.vue'
+import { EditOutlined, FullscreenOutlined } from '@ant-design/icons-vue'
+import ImageOutPainting from '@/components/ImageOutPainting.vue'
 
 const route = useRoute()
 const router = useRouter()
+const uploadType = ref<'file' | 'url'>('file')
 const picture = ref<API.PictureVO>()
 const formData = ref<API.PictureEditRequest>({
   name: '',
@@ -20,7 +24,9 @@ const formData = ref<API.PictureEditRequest>({
   category: '',
   tags: [],
 })
-
+const spaceId = computed(() => {
+  return route.query?.spaceId
+})
 // 定义onSuccess回调函数的正确类型
 const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
@@ -28,18 +34,19 @@ const onSuccess = (newPicture: API.PictureVO) => {
 }
 
 const handleSubmit = async (values: any) => {
-  const pictureId = picture.value?.id || route.query?.id
+  const pictureId = picture.value?.id
   if (!pictureId) {
     message.error('请上传图片')
     return
   }
   const res = await editPictureUsingPost({
     id: pictureId,
+    spaceId: spaceId.value,
     ...values,
   })
   if (res.data.code === 0 && res.data.data) {
     message.success(route.query?.id ? '编辑成功' : '添加成功')
-    router.push(`/picture/${pictureId}`)
+    router.push(`/add_picture/${pictureId}`)
   } else {
     message.error(res.data.message || '操作失败')
   }
@@ -76,9 +83,6 @@ onMounted(() => {
 
 const getOldPicture = async () => {
   const pictureId = route.query?.id
-  // if (!pictureId) {
-  //   return
-  // }
   if (pictureId) {
     const res = await getPictureVoByIdUsingGet({
       id: pictureId,
@@ -96,6 +100,28 @@ const getOldPicture = async () => {
 onMounted(() => {
   getOldPicture()
 })
+const imageCropperRef = ref()
+
+
+const doEditPicture = () => {
+  imageCropperRef.value?.showModal()
+}
+const onCropSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
+// AI 扩图弹窗引用
+const imageOutPaintingRef = ref()
+
+// AI 扩图
+const doImagePainting = () => {
+    imageOutPaintingRef.value.showModal()
+}
+
+// 编辑成功事件
+const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
+
 </script>
 
 <template>
@@ -103,43 +129,145 @@ onMounted(() => {
     <h2 style="margin-bottom: 16px">
       {{ route.query.id ? '编辑图片' : '添加图片' }}
     </h2>
+    <a-typography-paragraph type="secondary" v-if="spaceId">
+      保存至空间：
+      <a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
+    </a-typography-paragraph>
+    <a-tabs v-model:activeKey="uploadType">
+      <a-tab-pane key="file" tab="文件上传">
+        <PictureUpload :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
+        <div v-if="picture" class="edit-bar">
+          <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
+          <a-button :icon="h(FullscreenOutlined)" @click="doImagePainting">AI 扩图</a-button>
 
-    <PictureUpload :picture="picture" :onSuccess="onSuccess" />
-    <a-form name="basic" v-if="picture" layout="vertical" :model="formData" @finish="handleSubmit">
-      <a-form-item label="名称" name="name" :rules="[{ required: true, message: '请输入名称' }]">
-        <a-input v-model:value="formData.name" placeholder="请输入名称" />
-      </a-form-item>
-      <a-form-item label="简介" name="introduction">
-        <a-textarea
-          v-model:value="formData.introduction"
-          placeholder="请输入简介"
-          :rows="2"
-          :auto-size="{ minRows: 2, maxRows: 5 }"
-          allow-clear
+        </div>
+        <ImageCropper
+          ref="imageCropperRef"
+          :imageUrl="picture?.url"
+          :picture="picture"
+          :spaceId="picture?.spaceId"
+          :onSuccess="onCropSuccess"
         />
-      </a-form-item>
-      <a-form-item label="分类" name="category">
-        <a-auto-complete
-          v-model:value="formData.category"
-          :options="categoryOptions"
-          placeholder="请输入分类"
-          allow-clear
+        <ImageOutPainting
+          ref="imageOutPaintingRef"
+          :picture="picture"
+          :spaceId="spaceId"
+          :onSuccess="onImageOutPaintingSuccess"
         />
-      </a-form-item>
-      <a-form-item label="标签" name="tags">
-        <a-select
-          v-model:value="formData.tags"
-          :options="tagOptions"
-          mode="tags"
-          placeholder="请输入标签"
-          allow-clear
-        />
-      </a-form-item>
+        <a-form
+          name="basic"
+          v-if="picture"
+          layout="vertical"
+          :model="formData"
+          @finish="handleSubmit"
+        >
+          <a-form-item
+            label="名称"
+            name="name"
+            :rules="[{ required: true, message: '请输入名称' }]"
+          >
+            <a-input v-model:value="formData.name" placeholder="请输入名称" />
+          </a-form-item>
+          <a-form-item label="简介" name="introduction">
+            <a-textarea
+              v-model:value="formData.introduction"
+              placeholder="请输入简介"
+              :rows="2"
+              :auto-size="{ minRows: 2, maxRows: 5 }"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item label="分类" name="category">
+            <a-auto-complete
+              v-model:value="formData.category"
+              :options="categoryOptions"
+              placeholder="请输入分类"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item label="标签" name="tags">
+            <a-select
+              v-model:value="formData.tags"
+              :options="tagOptions"
+              mode="tags"
+              placeholder="请输入标签"
+              allow-clear
+            />
+          </a-form-item>
 
-      <a-form-item>
-        <a-button type="primary" html-type="submit" style="width: 100%"> 添加</a-button>
-      </a-form-item>
-    </a-form>
+          <a-form-item>
+            <a-button type="primary" html-type="submit" style="width: 100%"> 添加</a-button>
+          </a-form-item>
+        </a-form>
+      </a-tab-pane>
+      <a-tab-pane key="url" tab="url上传" force-render>
+        <UrlPictureUpload :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
+        <div v-if="picture" class="edit-bar">
+          <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
+        </div>
+
+        <ImageCropper
+          ref="imageCropperRef"
+          :imageUrl="picture?.url"
+          :picture="picture"
+          :spaceId="picture?.spaceId"
+          :onSuccess="onCropSuccess"
+        />
+        <ImageOutPainting
+          ref="imageOutPaintingRef"
+          :picture="picture"
+          :spaceId="picture?.spaceId"
+          :onSuccess="onImageOutPaintingSuccess"
+        />
+        <a-form
+          name="basic"
+          v-if="picture"
+          layout="vertical"
+          :model="formData"
+          @finish="handleSubmit"
+        >
+          <a-form-item
+            label="名称"
+            name="name"
+            :rules="[{ required: true, message: '请输入名称' }]"
+          >
+            <a-input v-model:value="formData.name" placeholder="请输入名称" />
+          </a-form-item>
+          <a-form-item label="简介" name="introduction">
+            <a-textarea
+              v-model:value="formData.introduction"
+              placeholder="请输入简介"
+              :rows="2"
+              :auto-size="{ minRows: 2, maxRows: 5 }"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item label="分类" name="category">
+            <a-auto-complete
+              v-model:value="formData.category"
+              :options="categoryOptions"
+              placeholder="请输入分类"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item label="标签" name="tags">
+            <a-select
+              v-model:value="formData.tags"
+              :options="tagOptions"
+              mode="tags"
+              placeholder="请输入标签"
+              allow-clear
+            />
+          </a-form-item>
+
+          <a-form-item>
+            <a-button type="primary" html-type="submit" style="width: 100%"> 添加</a-button>
+          </a-form-item>
+        </a-form>
+      </a-tab-pane>
+    </a-tabs>
+
+    <div style="margin-bottom: 16px" />
   </div>
 </template>
 
@@ -148,5 +276,10 @@ onMounted(() => {
   padding: 20px;
   max-width: 720px;
   margin: 0 auto;
+}
+
+#addPicturePage .edit-bar {
+  text-align: center;
+  margin: 16px 0;
 }
 </style>

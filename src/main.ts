@@ -5,9 +5,12 @@ import "ant-design-vue/dist/reset.css";
 import {createPinia} from "pinia";
 import {createApp} from "vue";
 import '@/access.ts'
+import VueCropper from 'vue-cropper';
+import 'vue-cropper/dist/index.css'
 
 const app = createApp(App)
 app.use(Antd);
 app.use(createPinia())
+app.use(VueCropper)
 app.use(router)
 app.mount('#app')

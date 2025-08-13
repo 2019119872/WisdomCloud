@@ -1,39 +1,38 @@
 <script lang="ts" setup>
-import {computed, h, ref} from 'vue'
-import {HomeOutlined, LogoutOutlined} from '@ant-design/icons-vue'
-import type {MenuProps} from 'ant-design-vue'
-import {useRouter} from 'vue-router'
+import { computed, h, ref } from 'vue'
+import { HomeOutlined, LogoutOutlined } from '@ant-design/icons-vue'
+import type { MenuProps } from 'ant-design-vue'
+import { useRouter } from 'vue-router'
 import useLoginUserStore from '@/stores/useLoginUserStore.ts'
-import {userLogoutUsingPost} from "@/api/userController.ts";
-import {message} from "ant-design-vue";
+import { userLogoutUsingPost } from '@/api/userController.ts'
+import { message } from 'ant-design-vue'
+import { UserOutlined } from '@ant-design/icons-vue'
 
 const loginUserStore = useLoginUserStore()
 // 路由跳转事件
 const router = useRouter()
-const doMenuClick = ({key}) => {
+const doMenuClick = ({ key }) => {
   // console.log(key)
   router.push(key)
 }
 const doLogout = async () => {
-  const res = await userLogoutUsingPost();
+  const res = await userLogoutUsingPost()
   if (res.data.code === 0) {
     loginUserStore.setLoginUser({
       userName: '未登录',
     })
     message.success('退出登录成功')
     await router.push('/user/login')
-
   } else {
     message.error('退出失败' + res.data.message)
   }
-
 }
 //监听路由变化，更新要高亮的菜单项
 const current = ref<string[]>(['/'])
 router.afterEach((to, from, next) => {
   current.value = [to.path]
 })
-const originItems =  [
+const originItems = [
   {
     key: '/',
     icon: () => h(HomeOutlined),
@@ -56,13 +55,23 @@ const originItems =  [
     title: '图片管理',
   },
   {
+    key: '/admin/spaceManage',
+    label: '空间管理',
+    title: '空间管理',
+  },
+  {
     key: '/add_picture',
     label: '添加图片',
     title: '添加图片',
   },
+  // {
+  //   key: '/add_space',
+  //   label: '添加空间',
+  //   title: '添加空间',
+  // },
   {
     key: '/others',
-    label: h('a', {href: '#', target: '_blank'}, '智题云'),
+    label: h('a', { href: '#', target: '_blank' }, '智题云'),
     title: '智题云',
   },
 ]
@@ -71,13 +80,13 @@ const filterMenu = (menus = [] as MenuProps['items']) => {
     if (menu?.key?.startsWith('/admin')) {
       const loginUser = loginUserStore.loginUser
       if (!loginUser || loginUser.userRole !== 'admin') {
-        return false;
+        return false
       }
-    }return true
-  } )
+    }
+    return true
+  })
 }
-const items = computed(() => filterMenu(originItems)
-)
+const items = computed(() => filterMenu(originItems))
 </script>
 <template>
   <div id="globalHeader">
@@ -98,17 +107,26 @@ const items = computed(() => filterMenu(originItems)
           :items="items"
         ></a-menu>
       </a-col>
-      <a-col flex="120px">
+      <a-col flex="200px">
         <div class="user-login-status">
           <div v-if="loginUserStore.loginUser.id">
             <a-dropdown>
               <a-space style="font-size: 16px">
-                <a-avatar size="middle" :src="loginUserStore.loginUser.userAvatar" />
+                <a-avatar
+                  size="large"
+                  :src="loginUserStore.loginUser.userAvatar || '/assets/logo.png'"
+                />
                 {{ loginUserStore.loginUser.userName ?? '游客' }}
               </a-space>
 
               <template #overlay>
                 <a-menu>
+                  <a-menu-item>
+                    <router-link to="/my_space">
+                      <UserOutlined />
+                      我的空间
+                    </router-link>
+                  </a-menu-item>
                   <a-menu-item @click="doLogout">
                     <LogoutOutlined />
                     退出登录

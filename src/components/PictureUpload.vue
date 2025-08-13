@@ -4,9 +4,11 @@ import { ref } from 'vue'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { message, type UploadProps } from 'ant-design-vue'
 import { uploadPictureUsingPost } from '@/api/pictureController.ts'
+import router from '@/router'
 
 interface Props {
   picture?: API.PictureVO
+  spaceId?: number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 
@@ -32,7 +34,8 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
 const handleUpload = async ({ file }: any) => {
   loading.value = true
   try {
-    const params = props.picture ? { id: props.picture.id } : {}
+    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
+    params.spaceId = props.spaceId
     const res = await uploadPictureUsingPost(params, {}, file)
     if (res.data.code === 0 && res.data.data) {
       message.success('图片上传成功')
@@ -61,6 +64,10 @@ const handleUpload = async ({ file }: any) => {
         <div class="ant-upload-text">点击或拖拽上传图片</div>
       </div>
     </a-upload>
+    <div class="tips">
+      温馨提示：图片大小不符合上传要求，
+        <a href="https://docsmall.com/image-compress" target="_blank">压缩图片</a>
+    </div>
   </div>
 </template>
 
