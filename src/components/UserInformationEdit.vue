@@ -94,62 +94,64 @@ const onUserAvatarUploadSuccess = (newPicture: API.PictureVO) => {
     v-model:open="open"
     title="编辑个人资料"
     @cancel="closeModal"
-    width="800px"
-    :maskClosable="true"
-    :footer="null"
+    width="500px"
+  :maskClosable="true"
+  :footer="null"
   >
-    <a-form
-      name="basic"
-      layout="vertical"
-      :model="formData"
-    >
-      <!-- 头像和账号信息区域 -->
-      <div class="avatar-account-section">
-        <div class="avatar-container">
-          <!-- 显示预览头像 -->
-          <a-avatar :size="120" :src="tempAvatarUrl" class="avatar-img" />
-          <a-button
-            type="primary"
-            :icon="h(EditOutlined)"
-            @click="onUserAvatarUpload"
-            class="change-avatar-btn"
-          >
-            修改头像
-          </a-button>
-        </div>
+  <a-form
+    name="basic"
+    layout="vertical"
+    :model="formData"
+  >
+    <!-- 头像和账号信息区域 -->
+    <div class="avatar-account-section">
+      <div class="avatar-container">
+        <!-- 显示预览头像 -->
+        <a-avatar :size="100" :src="tempAvatarUrl" class="avatar-img" />  <!-- 缩小头像尺寸 -->
 
-        <!-- 账号信息展示（不可编辑） -->
+      </div>
+      <!-- 账号信息展示（不可编辑） -->
+      <a-flex justify="space-between" align="center">
         <div class="account-info">
           <div class="account-label">账号</div>
           <div class="account-value">{{ loginUser.userAccount || '未设置' }}</div>
           <div class="account-desc">账号为唯一标识，不可修改</div>
         </div>
-      </div>
+        <a-button
+          type="primary"
+          :icon="h(EditOutlined)"
+          @click="onUserAvatarUpload"
+          class="change-avatar-btn"
+        >
+          修改头像
+        </a-button>
+      </a-flex>
 
-      <!-- 昵称输入 -->
-      <a-form-item
-        label="昵称"
-        name="userName"
-        :rules="[{ required: true, message: '请输入昵称' }]"
-      >
-        <a-input v-model:value="formData.userName" placeholder="请输入昵称" />
-      </a-form-item>
+    </div>
+    <!-- 昵称输入 -->
+    <a-form-item
+      label="昵称"
+      name="userName"
+      :rules="[{ required: true, message: '请输入昵称' }]"
+    >
+      <a-input v-model:value="formData.userName" placeholder="请输入昵称" class="nickname-input" />
+    </a-form-item>
 
-      <!-- 简介输入 -->
-      <a-form-item label="简介" name="userProfile">
-        <a-textarea
-          v-model:value="formData.userProfile"
-          placeholder="请输入个人简介"
-          :rows="2"
-          :auto-size="{ minRows: 2, maxRows: 5 }"
-          allow-clear
-        />
-      </a-form-item>
+    <!-- 简介输入 -->
+    <a-form-item label="简介" name="userProfile">
+      <a-textarea
+        v-model:value="formData.userProfile"
+        placeholder="请输入个人简介"
+        :rows="2"
+        :auto-size="{ minRows: 2, maxRows: 5 }"
+        allow-clear
+      />
+    </a-form-item>
 
-      <a-form-item class="submit-btn-group">
-        <a-button type="primary" @click="handleSubmit">确认修改</a-button>
-      </a-form-item>
-    </a-form>
+    <a-form-item class="submit-btn-group">
+      <a-button type="primary" @click="handleSubmit">确认修改</a-button>
+    </a-form-item>
+  </a-form>
   </a-modal>
 
   <UserAvatarUpload
@@ -161,15 +163,15 @@ const onUserAvatarUploadSuccess = (newPicture: API.PictureVO) => {
 
 <style scoped>
 .user-information-upload :deep(.ant-modal-body) {
-  padding: 30px;
+  padding: 20px;  /* 减少内边距 */
 }
 
 /* 头像和账号区域样式 */
 .avatar-account-section {
   display: flex;
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
+  margin-bottom: 20px;  /* 减少底部间距 */
+  padding-bottom: 15px;  /* 减少底部内边距 */
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -177,13 +179,13 @@ const onUserAvatarUploadSuccess = (newPicture: API.PictureVO) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 40px;
+  margin-right: 25px;  /* 减少右侧间距 */
 }
 
 .avatar-img {
-  border: 4px solid #f5f5f5;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
+  border: 3px solid #f5f5f5;  /* 减少边框宽度 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);  /* 减轻阴影 */
+  margin-bottom: 12px;  /* 减少底部间距 */
   transition: transform 0.3s ease;
 }
 
@@ -192,8 +194,11 @@ const onUserAvatarUploadSuccess = (newPicture: API.PictureVO) => {
 }
 
 .change-avatar-btn {
-  width: 140px;
+  width: 100px;
   transition: all 0.2s;
+  font-size: 14px;
+  text-align: center;
+  margin-left: 20px;
 }
 
 .change-avatar-btn:hover {
@@ -208,30 +213,51 @@ const onUserAvatarUploadSuccess = (newPicture: API.PictureVO) => {
 }
 
 .account-label {
-  font-size: 14px;
+  font-size: 13px;  /* 减小字体 */
   color: #8c8c8c;
-  margin-bottom: 6px;
+  margin-bottom: 4px;  /* 减少底部间距 */
 }
 
 .account-value {
-  font-size: 18px;
+  font-size: 16px;  /* 减小字体 */
   font-weight: 500;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 6px;  /* 减少底部间距 */
 }
 
 .account-desc {
   font-size: 12px;
   color: #b3b3b3;
-  line-height: 1.5;
+  line-height: 1.4;  /* 调整行高 */
 }
 
 /* 表单项样式 */
 :deep(.ant-form-item) {
-  margin-bottom: 20px;
+  margin-bottom: 16px;  /* 减少表单项间距 */
 }
 
+/* 昵称输入框美化 */
+.nickname-input {
+  height: 40px;  /* 优化高度 */
+  border-radius: 6px;  /* 增加圆角 */
+  transition: all 0.2s;
+}
+
+.nickname-input:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* 确认按钮居中 */
 .submit-btn-group {
-  margin-top: 10px;
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;  /* 水平居中 */
+}
+
+.submit-btn-group :deep(.ant-btn) {
+  width: 160px;  /* 按钮宽度 */
+  height: 40px;  /* 按钮高度 */
+  font-size: 15px;  /* 按钮字体大小 */
 }
 </style>

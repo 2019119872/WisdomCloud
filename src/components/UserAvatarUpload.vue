@@ -143,6 +143,7 @@ const handleUpload = async ({ file }: any) => {
   align-items: center;
   justify-content: center;
   background-color: #f5f5f5;
+  padding: 5px;
 }
 
 /* 预览图片样式 - 确保填充容器且不变形 */
