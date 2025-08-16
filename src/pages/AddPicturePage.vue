@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, onMounted, ref } from 'vue'
+import { computed, h, onMounted, ref, watchEffect } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   editPictureUsingPost,
@@ -13,6 +13,7 @@ import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
 import ImageCropper from '@/components/ImageCropper.vue'
 import { EditOutlined, FullscreenOutlined } from '@ant-design/icons-vue'
 import ImageOutPainting from '@/components/ImageOutPainting.vue'
+import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 
 const route = useRoute()
 const router = useRouter()
@@ -25,7 +26,7 @@ const formData = ref<API.PictureEditRequest>({
   tags: [],
 })
 const spaceId = computed(() => {
-  return route.query?.spaceId
+  return route.query?.spaceId as string | undefined
 })
 // 定义onSuccess回调函数的正确类型
 const onSuccess = (newPicture: API.PictureVO) => {
@@ -46,7 +47,7 @@ const handleSubmit = async (values: any) => {
   })
   if (res.data.code === 0 && res.data.data) {
     message.success(route.query?.id ? '编辑成功' : '添加成功')
-    router.push(`/add_picture/${pictureId}`)
+    router.push(`/picture/${pictureId}`)
   } else {
     message.error(res.data.message || '操作失败')
   }
@@ -77,9 +78,6 @@ const getTagCategoryOptions = async () => {
   }
 }
 
-onMounted(() => {
-  getTagCategoryOptions()
-})
 
 const getOldPicture = async () => {
   const pictureId = route.query?.id
@@ -99,6 +97,7 @@ const getOldPicture = async () => {
 }
 onMounted(() => {
   getOldPicture()
+  getTagCategoryOptions()
 })
 const imageCropperRef = ref()
 
@@ -121,6 +120,24 @@ const doImagePainting = () => {
 const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
 }
+const space = ref<API.SpaceVO>()
+
+// 获取空间信息
+const fetchSpace = async () => {
+  // 获取数据
+  if (spaceId.value) {
+    const res = await getSpaceVoByIdUsingGet({
+      id: spaceId.value,
+    })
+    if (res.data.code === 0 && res.data.data) {
+      space.value = res.data.data
+    }
+  }
+}
+
+watchEffect(() => {
+  fetchSpace()
+})
 
 </script>
 
@@ -147,6 +164,7 @@ const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
           :picture="picture"
           :spaceId="picture?.spaceId"
           :onSuccess="onCropSuccess"
+          :space="space"
         />
         <ImageOutPainting
           ref="imageOutPaintingRef"
@@ -212,6 +230,7 @@ const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
           :picture="picture"
           :spaceId="picture?.spaceId"
           :onSuccess="onCropSuccess"
+          :space="space"
         />
         <ImageOutPainting
           ref="imageOutPaintingRef"
@@ -261,7 +280,9 @@ const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
           </a-form-item>
 
           <a-form-item>
-            <a-button type="primary" html-type="submit" style="width: 100%"> 添加</a-button>
+            <a-button type="primary" html-type="submit" style="width: 100%">
+              {{ route.query.id ? '保存' : '添加' }}
+            </a-button>
           </a-form-item>
         </a-form>
       </a-tab-pane>

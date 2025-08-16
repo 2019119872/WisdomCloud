@@ -35,7 +35,7 @@ const onFinishFailed = (errorInfo: any) => {
       @finishFailed="onFinishFailed"
     >
       <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入你的账户名!' }]">
-        <a-input v-model:value="formState.userAccount" placeholder="请输入你的账户名:" />
+        <a-input v-model:value="formState.userAccount" placeholder="请输入你的账户名:" allow-clear/>
       </a-form-item>
 
       <a-form-item
@@ -45,7 +45,7 @@ const onFinishFailed = (errorInfo: any) => {
           { min: 8, message: '密码长度不能小于8位' },
         ]"
       >
-        <a-input-password v-model:value="formState.userPassword" placeholder="请输入用户密码:" />
+        <a-input-password v-model:value="formState.userPassword" placeholder="请输入用户密码:" allow-clear/>
       </a-form-item>
       <div class="tips">
         没有账号？

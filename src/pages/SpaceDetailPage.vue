@@ -62,7 +62,6 @@ const fetchData = async () => {
   }
 }
 
-// 修复：合并重复的onMounted钩子
 onMounted(() => {
   fetchSpaceDetail()
   fetchData()
@@ -122,6 +121,7 @@ const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_D
         <a-button
           type="primary"
           ghost
+          v-if="space.spaceType === 1"
           :icon="h(TeamOutlined)"
           :href="`/spaceUserManage/${id}`"
           target="_blank"
@@ -139,7 +139,6 @@ const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_D
         </a-button>
 
         <a-button :icon="h(EditOutlined)" @click="doBatchEdit">批量编辑</a-button>
-        >
         <a-tooltip :title="`占用空间${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`">
           <a-progress
             type="circle"
@@ -159,7 +158,7 @@ const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_D
       v-model:page-size="searchParams.pageSize"
       :total="total"
       @change="onPageChange"
-      style="text-align: right; position: absolute; right: 0; bottom: 60px"
+      style="text-align: right; "
     />
     <BatchEditPictureModal
       ref="batchEditPictureModalRef"

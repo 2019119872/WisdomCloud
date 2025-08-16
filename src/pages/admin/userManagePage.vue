@@ -100,6 +100,7 @@ const doDelete = async (id: string) => {
 </script>
 <template>
   <div id="userManagePage">
+    <h2>用户管理</h2>
     <a-form layout="inline" :model="searchParams" @finish="doSearch">
       <a-form-item label="账号">
         <a-input v-model:value="searchParams.userAccount" placeholder="输入账号" allow-clear />

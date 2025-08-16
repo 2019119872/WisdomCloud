@@ -1,29 +1,26 @@
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
-import { PIC_REVIEW_STATUS_OPTIONS } from '@/constants/picture.ts'
-import type { RangeValue } from 'ant-design-vue/es/vc-picker/interface'
 import dayjs from 'dayjs'
 import { listPictureTagCategoryUsingGet } from '@/api/pictureController.ts'
+
 interface Props {
   onSearch?: (searchParams: API.PictureQueryRequest) => void
 }
 const props = defineProps<Props>()
 const searchParams = reactive<API.PictureQueryRequest>({})
 const doSearch = () => {
- props.onSearch?.(searchParams)
+  props.onSearch?.(searchParams)
 }
-const dataRange = ref<[]>([]);
+const dataRange = ref<[]>([])
 const onRangeChange = (dates: any[], dateStrings: string[]) => {
- if (dates?.length >=  2) {
-   searchParams.startEditTime = dates[0].toDate()
-   searchParams.endEditTime = dates[1].toDate()
-
- } else {
-   searchParams.startEditTime = undefined
-   searchParams.endEditTime = undefined
- }
-
-};
+  if (dates?.length >= 2) {
+    searchParams.startEditTime = dates[0].toDate()
+    searchParams.endEditTime = dates[1].toDate()
+  } else {
+    searchParams.startEditTime = undefined
+    searchParams.endEditTime = undefined
+  }
+}
 const dateRange = ref<[]>([])
 
 /**
@@ -67,9 +64,9 @@ onMounted(() => {
   getTagCategoryOptions()
 })
 const doClear = () => {
- Object.keys(searchParams).forEach(key => {
-   searchParams[key] = undefined
- })
+  Object.keys(searchParams).forEach((key) => {
+    searchParams[key] = undefined
+  })
   dataRange.value = []
   props.onSearch?.(searchParams)
 }
@@ -102,7 +99,6 @@ const doClear = () => {
           mode="tags"
           placeholder="请输入标签"
           style="min-width: 180px"
-
           allow-clear
         />
       </a-form-item>
@@ -118,48 +114,31 @@ const doClear = () => {
         />
       </a-form-item>
       <a-form-item label="名称" name="name">
-        <a-input
-          v-model:value="searchParams.name"
-          placeholder="请输入名称"
-          allow-clear
-        />
+        <a-input v-model:value="searchParams.name" placeholder="请输入名称" allow-clear />
       </a-form-item>
       <a-form-item label="简介" name="introduction">
-        <a-input
-          v-model:value="searchParams.introduction"
-          placeholder="请输入简介"
-          allow-clear
-        />
+        <a-input v-model:value="searchParams.introduction" placeholder="请输入简介" allow-clear />
       </a-form-item>
       <a-form-item label="宽度" name="picWidth">
-        <a-input-number
-          v-model:value="searchParams.picWidth"
-        />
-      </a-form-item><a-form-item label="高度" name="picHeight">
-        <a-input-number
-          v-model:value="searchParams.picHeight"
-        />
+        <a-input-number v-model:value="searchParams.picWidth" /> </a-form-item
+      ><a-form-item label="高度" name="picHeight">
+        <a-input-number v-model:value="searchParams.picHeight" />
       </a-form-item>
       <a-form-item label="格式" name="picFormat">
-        <a-input
-          v-model:value="searchParams.picFormat"
-          placeholder="请输入格式"
-          allow-clear
-        />
+        <a-input v-model:value="searchParams.picFormat" placeholder="请输入格式" allow-clear />
       </a-form-item>
       <a-form-item>
         <a-space>
           <a-button type="primary" html-type="submit">搜索</a-button>
-          <a-button  html-type="reset" @click="doClear">重置</a-button>
+          <a-button html-type="reset" @click="doClear">重置</a-button>
         </a-space>
-
       </a-form-item>
     </a-form>
   </div>
 </template>
 
 <style scoped>
-.pictureSearchForm .ant-form-item{
+.pictureSearchForm .ant-form-item {
   margin-bottom: 16px;
 }
 </style>

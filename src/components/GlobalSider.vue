@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, h, ref, watchEffect } from 'vue'
-import { PictureOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { PictureOutlined, TeamOutlined, UsergroupAddOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import useLoginUserStore from '@/stores/useLoginUserStore.ts'
 import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
@@ -34,7 +34,7 @@ const fixedMenuItems = [
   },
   {
     key: '/add_space?type=' + SPACE_TYPE_ENUM.TEAM,
-    icon: () => h(TeamOutlined),
+    icon: () => h(UsergroupAddOutlined),
     label: '创建团队',
   },
 ]
