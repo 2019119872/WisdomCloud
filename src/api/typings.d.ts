@@ -370,6 +370,7 @@ declare namespace API {
     current?: number
     endEditTime?: string
     id?: number
+    includeAvatar?: boolean
     introduction?: string
     name?: string
     nullSpaceId?: boolean
@@ -418,6 +419,7 @@ declare namespace API {
   }
 
   type PictureUploadRequest = {
+    avatar?: boolean
     fileUrl?: string
     id?: number
     picName?: string
@@ -643,10 +645,13 @@ declare namespace API {
   }
 
   type uploadPictureUsingPOSTParams = {
+    avatar?: boolean
     fileUrl?: string
     id?: number
     picName?: string
     spaceId?: number
+    /** isAvatar */
+    isAvatar?: boolean
   }
 
   type User = {
