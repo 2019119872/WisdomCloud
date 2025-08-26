@@ -14,7 +14,6 @@ import SpaceDetailPage from '@/pages/SpaceDetailPage.vue'
 import SearchPicturePage from '@/pages/SearchPicturePage.vue'
 import SpaceAnalyzePage from '@/pages/SpaceAnalyzePage.vue'
 import SpaceUserManagePage from '@/pages/admin/SpaceUserManagePage.vue'
-import UserExchangeVipPage from '@/pages/UserExchangeVipPage.vue'
 import UserDetailsPage from '@/pages/user/userDetailsPage.vue'
 
 const router = createRouter({
@@ -25,15 +24,6 @@ const router = createRouter({
       name: 'home',
       component: HomePage,
     },
-    // 懒加载方式
-    // {
-    //   path: '/about',
-    //   name: 'about',
-    //   // route level code-splitting
-    //   // this generates a separate chunk (About.[hash].js) for this route
-    //   // which is lazy-loaded when the route is visited.
-    //   component: () => import('@/pages/AboutView.vue'),
-    // },
     {
       path: '/user/login',
       name: '用户登录',
@@ -64,11 +54,6 @@ const router = createRouter({
       name: '添加图片',
       component: AddPicturePage
     },
-    // {
-    //   path: '/user_exchange_vip',
-    //   name: '用户兑换会员',
-    //   component: UserExchangeVipPage
-    // },
     {
       path: '/add_space',
       name: '创建空间',

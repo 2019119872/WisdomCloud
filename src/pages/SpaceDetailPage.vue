@@ -15,7 +15,17 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+/**
+ * 空间信息
+ */
 const space = ref<API.SpaceVO>({})
+
+/**
+ * 获取空间详细信息
+ *
+ * @returns {Promise<void>} 无返回值
+ */
 const fetchSpaceDetail = async () => {
   try {
     const res = await getSpaceVoByIdUsingGet({
@@ -31,15 +41,36 @@ const fetchSpaceDetail = async () => {
   }
 }
 
+/**
+ * 图片列表数据
+ */
 const dataList = ref<API.PictureVO[]>([])
+
+/**
+ * 数据总数
+ */
 const total = ref<number>(0)
+
+/**
+ * 搜索参数
+ */
 const searchParams = ref<API.PictureQueryRequest>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'descend',
 })
+
+/**
+ * 加载状态
+ */
 const loading = ref(true)
+
+/**
+ * 获取图片列表数据
+ *
+ * @returns {Promise<void>} 无返回值
+ */
 const fetchData = async () => {
   loading.value = true
   const params = {
@@ -62,17 +93,33 @@ const fetchData = async () => {
   }
 }
 
+/**
+ * 组件挂载时获取空间详情和图片列表数据
+ */
 onMounted(() => {
   fetchSpaceDetail()
   fetchData()
 })
 
+/**
+ * 分页变化处理函数
+ *
+ * @param {number} page - 当前页码
+ * @param {number} pageSize - 每页条数
+ * @returns {void}
+ */
 const onPageChange = (page: number, pageSize: number) => {
   searchParams.value.current = page
   searchParams.value.pageSize = pageSize
   fetchData()
 }
 
+/**
+ * 搜索处理函数
+ *
+ * @param {API.PictureQueryRequest} newSearchParams - 新的搜索参数
+ * @returns {void}
+ */
 const onSearch = (newSearchParams: API.PictureQueryRequest) => {
   searchParams.value = {
     ...searchParams.value,
@@ -81,14 +128,33 @@ const onSearch = (newSearchParams: API.PictureQueryRequest) => {
   }
   fetchData()
 }
+
+/**
+ * 批量编辑图片弹窗引用
+ */
 const batchEditPictureModalRef = ref()
 
+/**
+ * 批量编辑图片成功回调
+ *
+ * @returns {void}
+ */
 const onBatchEditPictureSuccess = () => {
   fetchData()
 }
+
+/**
+ * 触发批量编辑操作
+ *
+ * @returns {void}
+ */
 const doBatchEdit = () => {
   batchEditPictureModalRef.value.showModal()
 }
+
+/**
+ * 监听空间ID变化，重新获取数据
+ */
 watch(
   () => props.id,
   (newSpaceId) => {
@@ -96,14 +162,22 @@ watch(
     fetchData()
   },
 )
-// 通用权限检查函数
+
+/**
+ * 创建权限检查函数
+ *
+ * @param {string} permission - 权限标识
+ * @returns {ComputedRef<boolean>} 权限检查结果
+ */
 function createPermissionChecker(permission: string) {
   return computed(() => {
     return (space.value.permissionList ?? []).includes(permission)
   })
 }
 
-// 定义权限检查
+/**
+ * 定义权限检查
+ */
 const canManageSpaceUser = createPermissionChecker(SPACE_PERMISSION_ENUM.SPACE_USER_MANAGE)
 const canUploadPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_UPLOAD)
 const canEditPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
@@ -111,13 +185,23 @@ const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_D
 </script>
 <template>
   <div id="spaceDetailPage">
+    <!-- 页面标题和操作按钮区域 -->
     <a-flex justify="space-between" align="top">
+      <!-- 空间名称和类型显示 -->
       <h2>{{ space.spaceName }}（{{ SPACE_TYPE_MAP[space.spaceType] }}）</h2>
 
+      <!-- 操作按钮组 -->
       <a-space size="small">
-        <a-button v-if="canUploadPicture" type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank" ghost
+        <!-- 添加图片按钮 -->
+        <a-button
+          v-if="canUploadPicture"
+          type="primary"
+          :href="`/add_picture?spaceId=${id}`"
+          target="_blank"
+          ghost
           >+添加图片
         </a-button>
+        <!-- 成员管理按钮 -->
         <a-button
           type="primary"
           ghost
@@ -128,6 +212,7 @@ const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_D
         >
           成员管理
         </a-button>
+        <!-- 空间分析按钮 -->
         <a-button
           type="primary"
           ghost
@@ -138,7 +223,9 @@ const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_D
           空间分析
         </a-button>
 
+        <!-- 批量编辑按钮 -->
         <a-button :icon="h(EditOutlined)" @click="doBatchEdit">批量编辑</a-button>
+        <!-- 空间使用情况进度条 -->
         <a-tooltip :title="`占用空间${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`">
           <a-progress
             type="circle"
@@ -148,18 +235,36 @@ const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_D
         </a-tooltip>
       </a-space>
     </a-flex>
-    <div style="margin-bottom: 16px"></div>
-    <PictureSearchForm :onSearch="onSearch"></PictureSearchForm>
-    <PictureList :canEdit="canEditPicture" :canDelete="canDeletePicture" :dataList="dataList" :loading="loading" :show-op="true" :onReload="fetchData" />
+
+    <!-- 间距占位 -->
     <div style="margin-bottom: 16px"></div>
 
+    <!-- 图片搜索表单 -->
+    <PictureSearchForm :onSearch="onSearch"></PictureSearchForm>
+
+    <!-- 图片列表展示 -->
+    <PictureList
+      :canEdit="canEditPicture"
+      :canDelete="canDeletePicture"
+      :dataList="dataList"
+      :loading="loading"
+      :show-op="true"
+      :onReload="fetchData"
+    />
+
+    <!-- 间距占位 -->
+    <div style="margin-bottom: 16px"></div>
+
+    <!-- 分页组件 -->
     <a-pagination
       v-model:current="searchParams.current"
       v-model:page-size="searchParams.pageSize"
       :total="total"
       @change="onPageChange"
-      style="text-align: right; "
+      style="text-align: right"
     />
+
+    <!-- 批量编辑图片弹窗 -->
     <BatchEditPictureModal
       ref="batchEditPictureModalRef"
       :spaceId="id"

@@ -10,6 +10,10 @@ const formData = ref<API.VipExchangeRequest>({
   vipCode: '',
 })
 
+/**
+ * 处理表单提交事件，用于兑换会员
+ * @param values 表单数据（未使用，实际使用的是 formData）
+ */
 const handleSubmit = async (values: any) => {
   // 表单验证
   if (!formData.value.vipCode || formData.value.vipCode.trim() === '') {
@@ -37,12 +41,15 @@ const handleSubmit = async (values: any) => {
 </script>
 
 <template>
+  <!-- 页面容器 -->
   <div id="vipExchangePage">
+    <!-- 页面头部标题区域 -->
     <div class="page-header">
       <h2>会员码兑换</h2>
       <p>输入您的会员兑换码，激活会员权益</p>
     </div>
 
+    <!-- 兑换表单 -->
     <a-form
       name="vipExchangeForm"
       layout="vertical"
@@ -50,6 +57,7 @@ const handleSubmit = async (values: any) => {
       @finish="handleSubmit"
       class="exchange-form"
     >
+      <!-- 兑换码输入项 -->
       <a-form-item
         label="会员兑换码"
         name="vipCode"
@@ -64,6 +72,7 @@ const handleSubmit = async (values: any) => {
         <p class="form-hint">提示：兑换码区分大小写，请准确输入</p>
       </a-form-item>
 
+      <!-- 提交按钮组 -->
       <a-form-item class="submit-btn-group">
         <a-button
           type="primary"
@@ -80,6 +89,7 @@ const handleSubmit = async (values: any) => {
       </a-form-item>
     </a-form>
 
+    <!-- 会员权益展示区域 -->
     <div class="exchange-benefits">
       <h3>会员权益</h3>
       <ul>
@@ -105,6 +115,7 @@ const handleSubmit = async (values: any) => {
 </template>
 
 <style scoped>
+/* 页面整体布局样式 */
 #vipExchangePage {
   padding: 20px;
   max-width: 540px;
@@ -114,6 +125,7 @@ const handleSubmit = async (values: any) => {
   flex-direction: column;
 }
 
+/* 页面头部样式 */
 .page-header {
   text-align: center;
   margin: 30px 0 40px;
@@ -130,6 +142,7 @@ const handleSubmit = async (values: any) => {
   font-size: 14px;
 }
 
+/* 表单样式 */
 .exchange-form {
   background: #fff;
   padding: 30px;
@@ -138,6 +151,7 @@ const handleSubmit = async (values: any) => {
   margin-bottom: 30px;
 }
 
+/* 表单提示文字样式 */
 .form-hint {
   margin-top: 8px;
   font-size: 12px;
@@ -145,10 +159,12 @@ const handleSubmit = async (values: any) => {
   margin-bottom: 0;
 }
 
+/* 按钮组样式 */
 .submit-btn-group {
   margin-top: 20px;
 }
 
+/* 会员权益展示区样式 */
 .exchange-benefits {
   background: #f9fafb;
   padding: 20px;

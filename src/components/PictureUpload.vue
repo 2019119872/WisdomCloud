@@ -1,11 +1,15 @@
 <script lang="ts" setup>
-// 修正：将User相关类型改为Picture
 import { ref } from 'vue'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { message, type UploadProps } from 'ant-design-vue'
 import { uploadPictureUsingPost } from '@/api/pictureController.ts'
-import router from '@/router'
 
+/**
+ * 组件属性定义
+ * @property {API.PictureVO} [picture] - 当前图片信息（可选）
+ * @property {number} [spaceId] - 空间ID（可选）
+ * @property {(newPicture: API.PictureVO) => void} [onSuccess] - 上传成功回调函数（可选）
+ */
 interface Props {
   picture?: API.PictureVO
   spaceId?: number
@@ -16,6 +20,11 @@ const props = defineProps<Props>()
 
 const loading = ref<boolean>(false)
 
+/**
+ * 上传前校验文件格式和大小
+ * @param file - 待上传的文件对象
+ * @returns {boolean} 校验是否通过
+ */
 const beforeUpload = (file: UploadProps['fileList'][number]) => {
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
   if (!isJpgOrPng) {
@@ -27,13 +36,15 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
   }
   return isJpgOrPng && isLt2M
 }
+
 /**
- * 上传
- * @param file
+ * 处理图片上传请求
+ * @param options - 上传配置对象，包含待上传的文件
  */
 const handleUpload = async ({ file }: any) => {
   loading.value = true
   try {
+    // 构造上传参数
     const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
     params.spaceId = props.spaceId
     const res = await uploadPictureUsingPost(params, {}, file)
@@ -43,7 +54,7 @@ const handleUpload = async ({ file }: any) => {
       props.onSuccess?.(res.data.data)
     }
   } catch (error: any) {
-    console.error('图片上传失败',error)
+    console.error('图片上传失败', error)
     message.error('图片上传失败' + error.message)
   }
   loading.value = false
@@ -51,12 +62,14 @@ const handleUpload = async ({ file }: any) => {
 </script>
 <template>
   <div class="pictureUpload">
+    <!-- 图片上传区域 -->
     <a-upload
       list-type="picture-card"
       :show-upload-list="false"
       :custom-request="handleUpload"
       :before-upload="beforeUpload"
     >
+      <!-- 显示已上传的图片或上传图标 -->
       <img v-if="picture?.url" :src="picture?.url" alt="avatar" />
       <div v-else>
         <loading-outlined v-if="loading"></loading-outlined>
@@ -64,9 +77,10 @@ const handleUpload = async ({ file }: any) => {
         <div class="ant-upload-text">点击或拖拽上传图片</div>
       </div>
     </a-upload>
+    <!-- 上传提示信息 -->
     <div class="tips">
       温馨提示：图片大小不符合上传要求，
-        <a href="https://docsmall.com/image-compress" target="_blank">压缩图片</a>
+      <a href="https://docsmall.com/image-compress" target="_blank">压缩图片</a>
     </div>
   </div>
 </template>

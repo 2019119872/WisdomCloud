@@ -1,6 +1,7 @@
+ template
 <script lang="ts" setup>
 import { computed, h, ref, watchEffect } from 'vue'
-import { PictureOutlined, TeamOutlined, UsergroupAddOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { PictureOutlined, UsergroupAddOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import useLoginUserStore from '@/stores/useLoginUserStore.ts'
 import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
@@ -9,7 +10,10 @@ import { message } from 'ant-design-vue'
 
 const loginUserStore = useLoginUserStore()
 
-// 路由跳转事件
+/**
+ * 路由跳转事件处理函数
+ * @param key - 要跳转的路由路径
+ */
 const router = useRouter()
 const doMenuClick = ({ key }: { key: string }) => {
   router.push(key)
@@ -21,6 +25,10 @@ router.afterEach((to) => {
   current.value = [to.path]
 })
 
+/**
+ * 固定菜单项配置
+ * 包含公共图库、我的空间和创建团队三个固定入口
+ */
 const fixedMenuItems = [
   {
     key: '/',
@@ -41,6 +49,11 @@ const fixedMenuItems = [
 
 const teamSpaceList = ref<API.SpaceUserVO[]>([])
 
+/**
+ * 动态生成菜单项
+ * 根据是否拥有团队空间决定是否显示团队空间分组
+ * @returns 菜单项数组，包含固定菜单和动态团队空间菜单
+ */
 const menuItems = computed(() => {
   // 没有团队空间，只展示固定菜单
   if (teamSpaceList.value.length < 1) {
@@ -66,7 +79,10 @@ const menuItems = computed(() => {
   return [...fixedMenuItems, teamSpaceMenuGroup]
 })
 
-// 加载团队空间列表
+/**
+ * 加载用户所属的团队空间列表
+ * 通过API获取当前用户参与的所有团队空间信息
+ */
 const fetchTeamSpaceList = async () => {
   try {
     const res = await listMyTeamSpaceUsingPost()
@@ -94,12 +110,14 @@ watchEffect(() => {
 
 <template>
   <div id="globalSider">
+    <!-- 仅在用户已登录时显示侧边栏 -->
     <a-layout-sider
       v-if="loginUserStore.loginUser?.id"
       width="140"
       breakpoint="lg"
       collapsed-width="0"
     >
+      <!-- 渲染菜单组件，支持选中状态和点击事件 -->
       <a-menu
         v-model:selectedKeys="current"
         mode="inline"
@@ -115,4 +133,3 @@ watchEffect(() => {
   background: none;
 }
 </style>
-

@@ -4,14 +4,34 @@ import { EditOutlined } from '@ant-design/icons-vue'
 import useLoginUserStore from '@/stores/useLoginUserStore.ts'
 import UserInformationEdit from '@/components/UserInformationEdit.vue'
 
+/**
+ * 获取登录用户状态管理实例
+ */
 const loginUserStore = useLoginUserStore()
+
+/**
+ * 计算属性：获取当前登录用户信息
+ * @returns {Object} 当前登录用户对象
+ */
 const loginUser = computed(() => loginUserStore.loginUser)
+
+/**
+ * 用户信息编辑组件的引用
+ */
 const userInformationEditRef = ref()
 
+/**
+ * 打开用户信息编辑弹窗
+ * 调用子组件的 showModal 方法显示编辑窗口
+ */
 const onUserInformationEdit = () => {
   userInformationEditRef.value.showModal()
 }
 
+/**
+ * 用户信息更新成功回调函数
+ * 在用户信息编辑成功后触发，用于处理更新后的逻辑
+ */
 const onUserInformationEditSuccess = () => {
   console.log('用户信息更新成功')
 }
@@ -29,7 +49,7 @@ const onUserInformationEditSuccess = () => {
               :src="loginUser.userAvatar"
               alt="用户头像"
               class="main-avatar"
-              style="max-height:180px"
+              style="max-height: 180px"
               preview
             />
           </div>
@@ -72,6 +92,7 @@ const onUserInformationEditSuccess = () => {
     </a-row>
   </div>
 
+  <!-- 用户信息编辑组件 -->
   <UserInformationEdit ref="userInformationEditRef" @success="onUserInformationEditSuccess" />
 </template>
 

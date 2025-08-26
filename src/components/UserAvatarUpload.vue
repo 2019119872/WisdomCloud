@@ -5,6 +5,11 @@ import { message, type UploadProps } from 'ant-design-vue'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import useLoginUserStore from '@/stores/useLoginUserStore.ts'
 
+/**
+ * 组件属性定义
+ * @property {API.PictureVO} [picture] - 当前图片信息，用于预览
+ * @property {(newPicture: API.PictureVO) => void} [onSuccess] - 上传成功回调函数
+ */
 interface Props {
   picture?: API.PictureVO
   onSuccess?: (newPicture: API.PictureVO) => void
@@ -16,20 +21,34 @@ const emit = defineEmits<{
 }>()
 
 const open = ref(false)
+
+/**
+ * 显示模态框
+ */
 const showModal = () => {
   open.value = true
 }
 
+/**
+ * 关闭模态框
+ */
 const closeModal = () => {
   open.value = false
 }
+
 // 暴露组件方法
 defineExpose({
   showModal,
   closeModal,
 })
+
 const loading = ref<boolean>(false)
 
+/**
+ * 上传前校验文件格式和大小
+ * @param {UploadProps['fileList'][number]} file - 待上传的文件对象
+ * @returns {boolean} 是否通过校验
+ */
 const beforeUpload = (file: UploadProps['fileList'][number]) => {
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
   if (!isJpgOrPng) {
@@ -41,9 +60,15 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
   }
   return isJpgOrPng && isLt2M
 }
+
+/**
+ * 处理图片上传逻辑
+ * @param {any} options - 上传配置参数，包含文件信息
+ */
 const handleUpload = async ({ file }: any) => {
   loading.value = true
   try {
+    // 构造上传参数，如果存在原图片则传递其ID作为更新操作
     const params: API.PictureUploadRequest = props.picture
       ? { id: props.picture.id, isAvatar: true }
       : { isAvatar: true }
@@ -52,6 +77,7 @@ const handleUpload = async ({ file }: any) => {
     if (res.data.code === 0 && res.data.data) {
       message.success('头像上传成功')
       const newPicture = res.data.data
+      // 更新用户头像URL并触发成功事件
       useLoginUserStore().loginUser.userAvatar = newPicture.url
       emit('success', newPicture)
       closeModal()
@@ -65,6 +91,7 @@ const handleUpload = async ({ file }: any) => {
 </script>
 
 <template>
+  <!-- 图片上传模态框 -->
   <a-modal
     class="imageOutPainting"
     v-model:open="open"
@@ -74,6 +101,7 @@ const handleUpload = async ({ file }: any) => {
     width="500px"
   >
     <div class="upload-container">
+      <!-- 图片上传组件 -->
       <a-upload
         list-type="picture-card"
         :show-upload-list="false"
@@ -81,10 +109,11 @@ const handleUpload = async ({ file }: any) => {
         :before-upload="beforeUpload"
       >
         <div class="upload-area">
-          <!-- 新增图片容器，确保预览图与上传框尺寸一致 -->
+          <!-- 图片预览区域 -->
           <div class="image-preview-container" v-if="picture?.url">
             <img :src="picture?.url" alt="avatar" class="preview-img" />
           </div>
+          <!-- 上传占位符区域 -->
           <div v-else class="upload-placeholder">
             <loading-outlined v-if="loading" class="loading-icon"></loading-outlined>
             <plus-outlined v-else class="plus-icon"></plus-outlined>
@@ -95,9 +124,12 @@ const handleUpload = async ({ file }: any) => {
       </a-upload>
     </div>
 
+    <!-- 温馨提示 -->
     <div class="tips">
       <span style="color: red">*温馨提示</span>：如遇图片大小不符合上传要求，前往
-      <a href="https://docsmall.com/image-compress" target="_blank" class="compress-link">压缩图片</a>
+      <a href="https://docsmall.com/image-compress" target="_blank" class="compress-link"
+        >压缩图片</a
+      >
     </div>
   </a-modal>
 </template>

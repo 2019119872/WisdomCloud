@@ -3,15 +3,36 @@ import { onMounted, reactive, ref } from 'vue'
 import dayjs from 'dayjs'
 import { listPictureTagCategoryUsingGet } from '@/api/pictureController.ts'
 
+/**
+ * 组件属性定义
+ * @property {Function} onSearch - 搜索回调函数，接收搜索参数对象
+ */
 interface Props {
   onSearch?: (searchParams: API.PictureQueryRequest) => void
 }
+
 const props = defineProps<Props>()
+
+// 搜索参数响应式对象
 const searchParams = reactive<API.PictureQueryRequest>({})
+
+/**
+ * 执行搜索操作
+ * 调用父组件传入的onSearch回调函数，传递当前搜索参数
+ */
 const doSearch = () => {
   props.onSearch?.(searchParams)
 }
+
+// 日期范围选择器绑定值
 const dataRange = ref<[]>([])
+
+/**
+ * 日期范围更改处理函数
+ * 当用户选择日期范围时，更新搜索参数中的开始和结束编辑时间
+ * @param dates - 选中的日期对象数组
+ * @param dateStrings - 选中的日期字符串数组
+ */
 const onRangeChange = (dates: any[], dateStrings: string[]) => {
   if (dates?.length >= 2) {
     searchParams.startEditTime = dates[0].toDate()
@@ -21,6 +42,8 @@ const onRangeChange = (dates: any[], dateStrings: string[]) => {
     searchParams.endEditTime = undefined
   }
 }
+
+// 日期范围引用（未使用）
 const dateRange = ref<[]>([])
 
 /**
@@ -35,10 +58,17 @@ const rangePresets = ref([
   { label: '过去 90 天', value: [dayjs().add(-90, 'd'), dayjs()] },
 ])
 
+// 标签选项列表
 const tagOptions = ref<{ label: string; value: string }[]>([])
-// 原定义是string[]，但实际需要的是{label: string, value: string}[]类型
+
+// 分类选项列表
 const categoryOptions = ref<{ label: string; value: string }[]>([])
 
+/**
+ * 获取标签和分类选项数据
+ * 从API获取标签和分类列表，并转换为下拉选项格式
+ * @returns {Promise<void>}
+ */
 const getTagCategoryOptions = async () => {
   try {
     const res = await listPictureTagCategoryUsingGet()
@@ -60,9 +90,15 @@ const getTagCategoryOptions = async () => {
   }
 }
 
+// 组件挂载时获取标签和分类选项
 onMounted(() => {
   getTagCategoryOptions()
 })
+
+/**
+ * 清空搜索条件
+ * 重置所有搜索参数和日期范围选择器
+ */
 const doClear = () => {
   Object.keys(searchParams).forEach((key) => {
     searchParams[key] = undefined
@@ -120,8 +156,9 @@ const doClear = () => {
         <a-input v-model:value="searchParams.introduction" placeholder="请输入简介" allow-clear />
       </a-form-item>
       <a-form-item label="宽度" name="picWidth">
-        <a-input-number v-model:value="searchParams.picWidth" /> </a-form-item
-      ><a-form-item label="高度" name="picHeight">
+        <a-input-number v-model:value="searchParams.picWidth" />
+      </a-form-item>
+      <a-form-item label="高度" name="picHeight">
         <a-input-number v-model:value="searchParams.picHeight" />
       </a-form-item>
       <a-form-item label="格式" name="picFormat">

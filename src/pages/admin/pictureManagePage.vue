@@ -13,6 +13,9 @@ import {
   PIC_REVIEW_STATUS_OPTIONS,
 } from '@/constants/picture.ts'
 
+/**
+ * 表格列配置
+ */
 const columns = [
   {
     title: 'id',
@@ -137,9 +140,19 @@ const columns = [
   },
 ]
 
-// 修正数据列表类型定义（应为数组）
+/**
+ * 数据列表
+ */
 const dataList = ref<API.Picture[]>([])
+
+/**
+ * 数据总数
+ */
 const total = ref<number>(0)
+
+/**
+ * 搜索参数
+ */
 const searchParams = reactive<API.PictureQueryRequest>({
   current: 1,
   pageSize: 10,
@@ -147,11 +160,15 @@ const searchParams = reactive<API.PictureQueryRequest>({
   sortOrder: 'descend',
 })
 
+/**
+ * 获取图片数据列表
+ * @returns {Promise<void>}
+ */
 const fetchData = async () => {
   try {
     const res = await listPictureByPageUsingPost({
       ...searchParams,
-      nullSpaceId: true
+      nullSpaceId: true,
     })
     if (res.data.code === 0 && res.data.data) {
       dataList.value = res.data.data.records ?? []
@@ -165,10 +182,17 @@ const fetchData = async () => {
   }
 }
 
+/**
+ * 组件挂载时获取数据
+ */
 onMounted(() => {
   fetchData()
 })
 
+/**
+ * 计算分页配置
+ * @returns {Object} 分页配置对象
+ */
 const pagination = computed(() => {
   return {
     current: searchParams.current,
@@ -179,18 +203,30 @@ const pagination = computed(() => {
   }
 })
 
+/**
+ * 表格分页、排序、筛选变化时触发
+ * @param {any} page 分页信息
+ */
 const doTableChange = (page: any) => {
   searchParams.current = page.current
   searchParams.pageSize = page.pageSize
   fetchData()
 }
 
+/**
+ * 执行搜索操作
+ */
 const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
 
-// 修改删除逻辑，添加确认对话框
+/**
+ * 删除图片
+ * @param {number} id 图片ID
+ * @param {string} [name] 图片名称
+ * @returns {Promise<void>}
+ */
 const doDelete = async (id: number, name?: string) => {
   if (!id) {
     message.warning('缺少图片ID，无法删除')
@@ -228,6 +264,13 @@ const doDelete = async (id: number, name?: string) => {
     },
   })
 }
+
+/**
+ * 处理图片审核操作
+ * @param {API.Picture} record 图片记录
+ * @param {number} reviewStatus 审核状态
+ * @returns {Promise<void>}
+ */
 const handleReview = async (record: API.Picture, reviewStatus: number) => {
   const reviewMessage =
     reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS ? '管理员通过审核' : '管理员拒绝审核'
@@ -237,55 +280,67 @@ const handleReview = async (record: API.Picture, reviewStatus: number) => {
     reviewMessage,
   })
   if (res.data.code === 0 && res.data.data) {
-    message.success('审核成功', reviewMessage)
+    message.success('审核成功' + reviewMessage)
     fetchData() // 刷新数据
   } else {
-    message.error('审核失败', res.data.message)
+    message.error('审核失败' + res.data.message)
   }
 }
 </script>
 
 <template>
   <div id="pictureManagePage">
+    <!-- 页面标题和操作按钮 -->
     <a-flex justify="space-between">
       <h2>图片管理</h2>
       <a-space>
         <a-button type="primary" href="/add_picture" target="_blank" ghost>+添加图片</a-button>
-        <a-button type="primary" href="/add_picture/batch" target="_blank" ghost>+批量添加图片</a-button>
+        <a-button type="primary" href="/add_picture/batch" target="_blank" ghost
+          >+批量添加图片</a-button
+        >
       </a-space>
     </a-flex>
+
+    <!-- 搜索表单区域 -->
     <div style="margin-bottom: 16px"></div>
-      <a-form layout="inline" :model="searchParams" @finish="doSearch">
-        <a-form-item  label="关键词">
-          <a-input style="max-width: 180px" v-model:value="searchParams.searchText" placeholder="输入关键词" allow-clear />
-        </a-form-item>
-        <a-form-item label="类型">
-          <a-input  v-model:value="searchParams.category" placeholder="输入图片类型" allow-clear />
-        </a-form-item>
-        <a-form-item label="标签">
-          <a-select
-            v-model:value="searchParams.tags"
-            mode="tags"
-            placeholder="请输入标签"
-            style="min-width: 120px"
-            allow-clear
-          />
-        </a-form-item>
-        <a-form-item name="reviewStatus" label="审核状态">
-          <a-select
-            v-model:value="searchParams.reviewStatus"
-            :options="PIC_REVIEW_STATUS_OPTIONS"
-            placeholder="请选择审核状态"
-            style="max-width: 110px"
-            allow-clear
-          />
-        </a-form-item>
-        <a-form-item>
-          <a-button type="primary" html-type="submit">搜索</a-button>
-        </a-form-item>
-      </a-form>
+    <a-form layout="inline" :model="searchParams" @finish="doSearch">
+      <a-form-item label="关键词">
+        <a-input
+          style="max-width: 180px"
+          v-model:value="searchParams.searchText"
+          placeholder="输入关键词"
+          allow-clear
+        />
+      </a-form-item>
+      <a-form-item label="类型">
+        <a-input v-model:value="searchParams.category" placeholder="输入图片类型" allow-clear />
+      </a-form-item>
+      <a-form-item label="标签">
+        <a-select
+          v-model:value="searchParams.tags"
+          mode="tags"
+          placeholder="请输入标签"
+          style="min-width: 120px"
+          allow-clear
+        />
+      </a-form-item>
+      <a-form-item name="reviewStatus" label="审核状态">
+        <a-select
+          v-model:value="searchParams.reviewStatus"
+          :options="PIC_REVIEW_STATUS_OPTIONS"
+          placeholder="请选择审核状态"
+          style="max-width: 110px"
+          allow-clear
+        />
+      </a-form-item>
+      <a-form-item>
+        <a-button type="primary" html-type="submit">搜索</a-button>
+      </a-form-item>
+    </a-form>
 
     <a-divider />
+
+    <!-- 图片数据表格 -->
     <a-table
       :columns="columns"
       :data-source="dataList"

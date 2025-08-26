@@ -6,25 +6,34 @@ import {
   LogoutOutlined,
   PicCenterOutlined,
   PictureOutlined,
+  ProfileOutlined,
   SettingOutlined,
-  ProfileOutlined
+  UserOutlined,
 } from '@ant-design/icons-vue'
 import type { MenuProps } from 'ant-design-vue'
+import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import useLoginUserStore from '@/stores/useLoginUserStore.ts'
 import { userLogoutUsingPost } from '@/api/userController.ts'
-import { message } from 'ant-design-vue'
-import { UserOutlined } from '@ant-design/icons-vue'
 
 const loginUserStore = useLoginUserStore()
-// 路由跳转事件
+
+/**
+ * 路由跳转处理函数
+ * @param key - 点击菜单项的 key 值，用于路由跳转
+ */
 const router = useRouter()
-const doMenuClick = ({ key } : { key: string }) => {
+const doMenuClick = ({ key }: { key: string }) => {
   // 忽略空键或分隔符
   if (key && key !== 'separator') {
     router.push(key)
   }
 }
+
+/**
+ * 用户退出登录处理函数
+ * 发起退出登录请求，清空用户状态并跳转到登录页
+ */
 const doLogout = async () => {
   const res = await userLogoutUsingPost()
   if (res.data.code === 0) {
@@ -37,13 +46,20 @@ const doLogout = async () => {
     message.error('退出失败' + res.data.message)
   }
 }
-// 监听路由变化，更新要高亮的菜单项
+
+/**
+ * 当前选中菜单项的状态管理
+ * 监听路由变化，动态更新当前高亮的菜单项
+ */
 const current = ref<string[]>(['/'])
 router.afterEach((to) => {
   current.value = [to.path]
 })
 
-// 原始菜单项，将三个管理页面整合到下拉菜单中
+/**
+ * 原始菜单项配置
+ * 包含主页、管理中心（含子菜单）、添加图片等导航项
+ */
 const originItems = [
   {
     key: '/',
@@ -84,19 +100,14 @@ const originItems = [
     label: '添加图片',
     title: '添加图片',
   },
-  {
-    key: '/user_exchange_vip',
-    label: '兑换会员',
-    title: '兑换会员',
-  },
-  {
-    key: '/others',
-    label: h('a', { href: '#', target: '_blank' }, '智题云'),
-    title: '智题云',
-  },
 ]
 
-// 过滤菜单，仅管理员可见管理中心
+/**
+ * 过滤菜单项函数
+ * 根据用户角色过滤菜单项，仅管理员可见管理中心
+ * @param menus - 原始菜单项数组
+ * @returns 过滤后的菜单项数组
+ */
 const filterMenu = (menus = [] as MenuProps['items']) => {
   return menus?.filter((menu) => {
     // 检查是否是管理中心菜单
@@ -113,21 +124,34 @@ const filterMenu = (menus = [] as MenuProps['items']) => {
   })
 }
 
+/**
+ * 计算属性：过滤后的菜单项
+ * 动态根据用户权限返回不同的菜单列表
+ */
 const items = computed(() => filterMenu(originItems))
 </script>
 
 <template>
+  <!-- 全局头部组件 -->
   <div id="globalHeader">
+    <!-- 使用 Ant Design 的 Row 布局容器，设置不换行 -->
     <a-row :wrap="false">
+      <!-- 左侧 Logo 和标题区域 -->
       <a-col flex="200px">
+        <!-- 点击跳转至首页 -->
         <router-link to="/">
           <div class="title-bar">
+            <!-- Logo 图标 -->
             <img src="../assets/logo.svg" alt="logo" width="48" height="48" class="logo" />
+            <!-- 系统标题 -->
             <span class="title">智云图库</span>
           </div>
         </router-link>
       </a-col>
+
+      <!-- 中间导航菜单区域 -->
       <a-col flex="auto">
+        <!-- 水平方向的 Ant Design 菜单组件 -->
         <a-menu
           @click="doMenuClick"
           v-model:selectedKeys="current"
@@ -135,32 +159,42 @@ const items = computed(() => filterMenu(originItems))
           :items="items"
         ></a-menu>
       </a-col>
+
+      <!-- 右侧用户登录状态区域 -->
       <a-col flex="200px">
         <div class="user-login-status">
+          <!-- 判断用户是否已登录 -->
           <div v-if="loginUserStore.loginUser.id">
+            <!-- 用户已登录时显示头像和用户名，并提供下拉菜单 -->
             <a-dropdown>
               <a-space style="font-size: 16px">
+                <!-- 用户头像 -->
                 <a-avatar
                   size="large"
                   :src="loginUserStore.loginUser?.userAvatar || '/assets/notLoginUser.png'"
                 />
+                <!-- 用户名 -->
                 {{ loginUserStore.loginUser.userName ?? '游客' }}
               </a-space>
 
+              <!-- 下拉菜单内容 -->
               <template #overlay>
                 <a-menu>
+                  <!-- 个人中心 -->
                   <a-menu-item>
                     <router-link to="/user_detail">
                       <ProfileOutlined />
-                     个人中心
+                      个人中心
                     </router-link>
                   </a-menu-item>
+                  <!-- 我的空间 -->
                   <a-menu-item>
                     <router-link to="/my_space">
                       <UserOutlined />
                       我的空间
                     </router-link>
                   </a-menu-item>
+                  <!-- 退出登录 -->
                   <a-menu-item @click="doLogout">
                     <LogoutOutlined />
                     退出登录
@@ -169,6 +203,7 @@ const items = computed(() => filterMenu(originItems))
               </template>
             </a-dropdown>
           </div>
+          <!-- 用户未登录时显示登录按钮 -->
           <div v-else>
             <a-button type="primary" href="/user/login">登录</a-button>
           </div>
@@ -179,11 +214,13 @@ const items = computed(() => filterMenu(originItems))
 </template>
 
 <style scoped>
+/* 标题栏布局样式 */
 #globalHeader .title-bar {
   display: flex;
   align-items: center;
 }
 
+/* 系统标题文字样式 */
 #globalHeader .title {
   margin-left: 16px;
   color: black;
@@ -199,7 +236,7 @@ const items = computed(() => filterMenu(originItems))
   display: block;
 }
 
-/* 保持选中项高亮 */
+/* 保持选中项高亮样式 */
 .ant-menu-item-selected {
   background-color: #e6f7ff !important;
 }
