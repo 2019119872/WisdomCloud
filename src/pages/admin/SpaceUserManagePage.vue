@@ -10,10 +10,16 @@ import {
   listSpaceUserUsingPost,
 } from '@/api/spaceUserController.ts'
 
-// 表格列
+/**
+ * 表格列配置
+ */
 interface Props {
+  /**
+   * 空间 ID，用于获取该空间下的用户列表
+   */
   id: string
 }
+
 const props = defineProps<Props>()
 const columns = [
   {
@@ -34,9 +40,17 @@ const columns = [
   },
 ]
 
-// 修正数据列表类型定义（应为数组）
+/**
+ * 数据列表，存储从后端获取的空间用户信息
+ */
 const dataList = ref<API.SpaceUserVO[]>([])
 
+/**
+ * 获取空间用户数据
+ *
+ * 通过 props.id 获取当前空间的用户列表，并更新到 dataList 中。
+ * 如果请求失败或返回错误码，则显示错误提示。
+ */
 const fetchData = async () => {
   try {
     const spaceId = props.id
@@ -57,11 +71,22 @@ const fetchData = async () => {
   }
 }
 
+/**
+ * 组件挂载时调用 fetchData 方法加载初始数据
+ */
 onMounted(() => {
   fetchData()
 })
 
-// 修改删除逻辑，添加确认对话框
+/**
+ * 删除空间用户
+ *
+ * @param id 用户在空间中的记录 ID
+ * @param name 用户名称（可选），用于提示信息展示
+ *
+ * 显示确认对话框，用户确认后执行删除操作。
+ * 删除成功后刷新数据列表。
+ */
 const doDelete = async (id: number, name?: string) => {
   if (!id) {
     message.warning('缺少图片ID，无法删除')
@@ -98,6 +123,15 @@ const doDelete = async (id: number, name?: string) => {
     },
   })
 }
+
+/**
+ * 修改用户在空间中的角色
+ *
+ * @param value 新的角色值
+ * @param record 当前用户的完整记录对象
+ *
+ * 调用接口更新角色信息，成功后显示提示并刷新数据。
+ */
 const editSpaceRole = async (value, record) => {
   const res = await editSpaceUserUsingPost({
     id: record.id,
@@ -109,9 +143,18 @@ const editSpaceRole = async (value, record) => {
     message.error('修改失败，' + res.data.message)
   }
 }
-// 添加用户
+
+/**
+ * 添加用户到空间的表单数据模型
+ */
 const formData = reactive<API.SpaceUserAddRequest>({})
 
+/**
+ * 提交添加用户表单
+ *
+ * 将 formData 中的数据提交至后端接口，添加新用户到当前空间。
+ * 成功后刷新数据列表。
+ */
 const handleSubmit = async () => {
   const spaceId = props.id
   if (!spaceId) {
@@ -133,6 +176,7 @@ const handleSubmit = async () => {
 
 <template>
   <div id="spaceUserManagePage">
+    <!-- 页面标题与操作按钮区域 -->
     <a-flex justify="space-between">
       <h2>空间成员管理</h2>
       <a-space>
@@ -145,8 +189,10 @@ const handleSubmit = async () => {
         </a-button>
       </a-space>
     </a-flex>
+    <!-- 表单与表格之间的分割线 -->
     <div style="margin-bottom: 16px"></div>
     <a-divider />
+    <!-- 添加用户表单 -->
     <a-form layout="inline" :model="formData" @finish="handleSubmit">
       <a-form-item label="用户 id" name="userId">
         <a-input v-model:value="formData.userId" placeholder="请输入用户 id" allow-clear />
@@ -156,14 +202,17 @@ const handleSubmit = async () => {
       </a-form-item>
     </a-form>
 
+    <!-- 空间用户列表表格 -->
     <a-table :columns="columns" :data-source="dataList">
       <template #bodyCell="{ column, record }">
+        <!-- 用户信息列 -->
         <template v-if="column.dataIndex === 'userInfo'">
           <a-space>
             <a-avatar :src="record.user?.userAvatar" />
             {{ record.user?.userName }}
           </a-space>
         </template>
+        <!-- 角色编辑列 -->
         <template v-if="column.dataIndex === 'spaceRole'">
           <a-select
             v-model:value="record.spaceRole"
@@ -171,9 +220,11 @@ const handleSubmit = async () => {
             @change="(value) => editSpaceRole(value, record)"
           />
         </template>
+        <!-- 创建时间列 -->
         <template v-else-if="column.dataIndex === 'createTime'">
           {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
         </template>
+        <!-- 操作列 -->
         <template v-else-if="column.key === 'action'">
           <a-space wrap>
             <a-button type="link" danger @click="doDelete(record.id)">删除</a-button>

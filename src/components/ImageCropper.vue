@@ -28,19 +28,26 @@ const isTeamSpace = computed(() => {
 // 编辑器组件的引用
 const cropperRef = ref()
 
-// 向左旋转
+/**
+ * 向左旋转图片
+ */
 const rotateLeft = () => {
   cropperRef.value.rotateLeft()
   editAction(PICTURE_EDIT_ACTION_ENUM.ROTATE_LEFT)
 }
 
-// 向右旋转
+/**
+ * 向右旋转图片
+ */
 const rotateRight = () => {
   cropperRef.value.rotateRight()
   editAction(PICTURE_EDIT_ACTION_ENUM.ROTATE_RIGHT)
 }
 
-// 缩放
+/**
+ * 缩放图片
+ * @param num 缩放系数，正数为放大，负数为缩小
+ */
 const changeScale = (num: number) => {
   cropperRef.value.changeScale(num)
   if (num > 0) {
@@ -49,6 +56,10 @@ const changeScale = (num: number) => {
     editAction(PICTURE_EDIT_ACTION_ENUM.ZOOM_OUT)
   }
 }
+
+/**
+ * 确认裁剪并上传图片
+ */
 const handleConfirm = () => {
   cropperRef.value.getCropBlob((blob: Blob) => {
     const fileName = (props.picture?.name || 'image') + '.png'
@@ -56,8 +67,14 @@ const handleConfirm = () => {
     handleUpload({ file })
   })
 }
+
 const loading = ref(false)
-const handleUpload = async ({ file }: any) => {
+
+/**
+ * 上传图片文件
+ * @param options 上传选项，包含要上传的文件
+ */
+const handleUpload = async ({ file }) => {
   loading.value = true
   try {
     const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
@@ -69,17 +86,25 @@ const handleUpload = async ({ file }: any) => {
       props.onSuccess?.(res.data.data)
       closeModal()
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('图片上传失败', error)
     message.error('图片上传失败' + error.message)
   }
   loading.value = false
 }
+
 const open = ref(false)
+
+/**
+ * 显示模态框
+ */
 const showModal = () => {
   open.value = true
 }
 
+/**
+ * 关闭模态框并清理资源
+ */
 const closeModal = () => {
   open.value = false
   if (websocket) {
@@ -87,24 +112,40 @@ const closeModal = () => {
   }
   editingUser.value = undefined
 }
+
 defineExpose({
   showModal,
 })
 
-
+/**
+ * 是否可以进入编辑状态
+ */
 const canEnterEdit = computed(() => {
   return !editingUser.value
 })
+
+/**
+ * 是否可以退出编辑状态
+ */
 const canExitEdit = computed(() => {
   return editingUser.value?.id === loginUser.id
 })
+
+/**
+ * 是否可以进行图片编辑操作
+ */
 const canEdit = computed(() => {
   if (!isTeamSpace.value) {
     return true
   }
   return editingUser.value?.id === loginUser.id
 })
+
 let websocket: PictureEditWebSocket | null
+
+/**
+ * 初始化WebSocket连接，用于图片协同编辑
+ */
 const initWebsocket = () => {
   const pictureId = props.picture?.id
   if (!pictureId || !open.value) {
@@ -153,18 +194,25 @@ const initWebsocket = () => {
     }
   })
 }
+
+// 监听团队空间变化，初始化WebSocket连接
 watchEffect(() => {
   if (isTeamSpace.value) {
     initWebsocket()
   }
 })
 
+// 组件卸载时断开WebSocket连接
 onUnmounted(() => {
   if (websocket) {
     websocket?.disconnect()
   }
   editingUser.value = undefined
 })
+
+/**
+ * 进入编辑状态
+ */
 const enterEdit = () => {
   if (websocket) {
     websocket.sendMessage({
@@ -173,6 +221,10 @@ const enterEdit = () => {
     })
   }
 }
+
+/**
+ * 退出编辑状态
+ */
 const exitEdit = () => {
   if (websocket) {
     websocket.sendMessage({
@@ -181,6 +233,11 @@ const exitEdit = () => {
     })
   }
 }
+
+/**
+ * 发送编辑操作消息
+ * @param action 编辑操作类型
+ */
 const editAction = (action: string) => {
   if (websocket) {
     websocket.sendMessage({
@@ -198,6 +255,7 @@ const editAction = (action: string) => {
     :footer="false"
     @cancel="closeModal"
   >
+    <!-- 图片裁剪组件 -->
     <vue-cropper
       ref="cropperRef"
       :img="imageUrl"
@@ -242,3 +300,4 @@ const editAction = (action: string) => {
   height: 400px !important;
 }
 </style>
+

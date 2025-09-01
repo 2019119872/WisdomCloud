@@ -1,11 +1,19 @@
 <script lang="ts" setup>
+/**
+ * 用户管理页面组件
+ * 实现用户列表展示、分页查询、条件搜索和删除功能
+ */
 
 import { computed, onMounted, reactive, ref } from 'vue'
 import { listUserVoByPageUsingPost } from '@/api/userController.ts'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
-import {deleteUserUsingPost} from "@/api/userController.ts";
+import { deleteUserUsingPost } from '@/api/userController.ts'
 
+/**
+ * 表格列配置
+ * 定义用户管理表格的列信息
+ */
 const columns = [
   {
     title: 'id',
@@ -43,14 +51,34 @@ const columns = [
   },
 ]
 
+/**
+ * 用户数据列表
+ * 存储从后端获取的用户信息列表
+ */
 const dataList = ref<API.UserVO>([])
+
+/**
+ * 数据总条数
+ * 用于分页组件显示总数据量
+ */
 const total = ref<number>(0)
+
+/**
+ * 搜索参数
+ * 包含分页信息和搜索条件
+ */
 const searchParams = reactive<API.UserQueryRequest>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'descend',
 })
+
+/**
+ * 获取用户数据
+ * 调用后端接口获取用户列表数据并更新到页面
+ * @returns {Promise<void>}
+ */
 const fetchData = async () => {
   const res = await listUserVoByPageUsingPost({
     ...searchParams,
@@ -62,9 +90,20 @@ const fetchData = async () => {
     message.error(res.data.message)
   }
 }
+
+/**
+ * 组件挂载时执行
+ * 初始化加载用户数据
+ */
 onMounted(() => {
   fetchData()
 })
+
+/**
+ * 分页配置计算属性
+ * 根据当前状态计算分页组件所需配置
+ * @returns {Object} 分页配置对象
+ */
 const pagination = computed(() => {
   return {
     current: searchParams.current,
@@ -74,21 +113,39 @@ const pagination = computed(() => {
     showTotal: (total) => `共 ${total} 条数据`,
   }
 })
+
+/**
+ * 表格分页变化处理函数
+ * 当用户切换分页时更新搜索参数并重新获取数据
+ * @param {Object} page - 分页信息对象，包含current和pageSize属性
+ */
 const doTableChange = (page: any) => {
   searchParams.current = page.current
   searchParams.pageSize = page.pageSize
   fetchData()
 }
+
+/**
+ * 执行搜索操作
+ * 重置页码为第一页并重新获取数据
+ */
 const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
+
+/**
+ * 删除用户
+ * 调用后端接口删除指定ID的用户
+ * @param {string} id - 要删除的用户ID
+ * @returns {Promise<void>}
+ */
 const doDelete = async (id: string) => {
   if (!id) {
     return
   }
   const res = await deleteUserUsingPost({
-    id
+    id,
   })
   if (res.data.code === 0 && res.data.data) {
     message.success('删除成功')
@@ -101,6 +158,7 @@ const doDelete = async (id: string) => {
 <template>
   <div id="userManagePage">
     <h2>用户管理</h2>
+    <!-- 用户搜索表单 -->
     <a-form layout="inline" :model="searchParams" @finish="doSearch">
       <a-form-item label="账号">
         <a-input v-model:value="searchParams.userAccount" placeholder="输入账号" allow-clear />
@@ -113,6 +171,7 @@ const doDelete = async (id: string) => {
       </a-form-item>
     </a-form>
     <a-divider />
+    <!-- 用户数据表格 -->
     <a-table
       :columns="columns"
       :data-source="dataList"

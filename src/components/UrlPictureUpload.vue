@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-// 修正：将User相关类型改为Picture
 import { ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { uploadPictureByUrlUsingPost } from '@/api/pictureController.ts'
 
 /**
- * 上传
- * @param file
+ * 处理图片上传逻辑
+ * 通过URL上传图片到服务器，并在成功后通知父组件
  */
 const handleUpload = async () => {
   loading.value = true
@@ -30,6 +29,12 @@ const handleUpload = async () => {
   loading.value = false
 }
 
+/**
+ * 组件接收的属性定义
+ * @property {API.PictureVO} [picture] - 当前显示的图片信息（可选）
+ * @property {number} [spaceId] - 所属空间ID（可选）
+ * @property {Function} [onSuccess] - 图片上传成功后的回调函数（可选）
+ */
 interface Props {
   picture?: API.PictureVO
   spaceId?: number
@@ -42,7 +47,9 @@ const loading = ref<boolean>(false)
 const fileUrl = ref<string>('')
 </script>
 <template>
+  <!-- URL图片上传区域 -->
   <div class="urlPictureUpload">
+    <!-- 输入框和提交按钮组合 -->
     <a-input-group compact>
       <a-input
         v-model:value="fileUrl"
@@ -51,6 +58,7 @@ const fileUrl = ref<string>('')
       />
       <a-button type="primary" @click="handleUpload" :loading="loading">提交</a-button>
     </a-input-group>
+    <!-- 显示当前图片预览 -->
     <div class="img-wrapper">
       <img v-if="picture?.url" :src="picture?.url" alt="avatar" />
     </div>

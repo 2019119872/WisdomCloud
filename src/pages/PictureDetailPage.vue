@@ -3,18 +3,42 @@ import { computed, h, onMounted, ref } from 'vue'
 import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { downloadImage, formatSize } from '@/utils/index.ts'
-import { DeleteOutlined, DownloadOutlined, EditOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
-import useLoginUserStore from '@/stores/useLoginUserStore.ts'
+import {
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  ShareAltOutlined,
+} from '@ant-design/icons-vue'
 import router from '@/router'
 import ShareModal from '@/components/ShareModal.vue'
 import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
 
+/**
+ * 组件属性定义
+ */
 interface Props {
+  /**
+   * 图片ID，用于获取图片详情
+   */
   id: number | string
 }
 
+/**
+ * 定义组件接收的属性
+ */
 const props = defineProps<Props>()
+
+/**
+ * 存储图片详情数据
+ */
 const picture = ref<API.PictureVO>({})
+
+/**
+ * 获取图片详细信息
+ *
+ * 通过调用后端接口获取指定ID的图片详细信息，并更新到picture响应式变量中。
+ * 如果请求失败，则显示错误提示信息。
+ */
 const fetchPictureDetail = async () => {
   try {
     const res = await getPictureVoByIdUsingGet({
@@ -29,11 +53,20 @@ const fetchPictureDetail = async () => {
     message.error('获取图片详细失败', e.message)
   }
 }
+
+/**
+ * 在组件挂载时执行图片详情获取操作
+ */
 onMounted(() => {
   fetchPictureDetail()
 })
 
-
+/**
+ * 删除当前图片
+ *
+ * 调用删除接口删除当前展示的图片，删除成功后跳转到首页。
+ * 如果删除失败，则显示错误提示信息。
+ */
 const doDelete = async () => {
   const id = picture.value.id
   if (!id) {
@@ -47,40 +80,74 @@ const doDelete = async () => {
     message.error(res.data.message)
   }
 }
+
+/**
+ * 编辑当前图片
+ *
+ * 跳转到编辑页面，携带图片ID和空间ID作为查询参数。
+ */
 const doEdit = () => {
   router.push({
     path: '/add_picture',
     query: {
       id: picture.value.id,
-      spaceId: picture.value.spaceId
-
-    }
+      spaceId: picture.value.spaceId,
+    },
   })
-
 }
+
+/**
+ * 下载当前图片
+ *
+ * 使用工具函数下载图片，传入图片URL和图片名称。
+ */
 const doDownload = () => {
   downloadImage(picture.value.url, picture.value.name)
 }
 
+/**
+ * 分享模态框引用
+ */
 const shareModalRef = ref()
+
+/**
+ * 分享链接地址
+ */
 const shareLink = ref<string>()
+
+/**
+ * 执行分享操作
+ *
+ * 构造分享链接并显示分享模态框。
+ */
 const doShare = () => {
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.value.id}`
   if (shareModalRef.value) {
     shareModalRef.value.showModal()
   }
 }
-// 通用权限检查函数
+
+/**
+ * 创建权限检查函数
+ *
+ * @param permission 权限标识符
+ * @returns 返回一个计算属性，表示是否拥有该权限
+ */
 function createPermissionChecker(permission: string) {
   return computed(() => {
     return (picture.value.permissionList ?? []).includes(permission)
   })
 }
 
-// 定义权限检查
+/**
+ * 检查是否有编辑权限
+ */
 const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
-const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 
+/**
+ * 检查是否有删除权限
+ */
+const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 </script>
 <template>
   <div id="pictureDetailPage">
@@ -142,8 +209,12 @@ const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
           <a-button v-if="canDelete" :icon="h(DeleteOutlined)" danger @click="doDelete"
             >删除
           </a-button>
-          <a-button v-if="canEdit" type="default" :icon="h(EditOutlined)" @click="doEdit">编辑</a-button>
-          <a-button style="color: deepskyblue" :icon="h(ShareAltOutlined)" @click="doShare">分享</a-button>
+          <a-button v-if="canEdit" type="default" :icon="h(EditOutlined)" @click="doEdit"
+            >编辑
+          </a-button>
+          <a-button style="color: deepskyblue" :icon="h(ShareAltOutlined)" @click="doShare"
+            >分享
+          </a-button>
         </a-space>
       </a-col>
     </a-row>

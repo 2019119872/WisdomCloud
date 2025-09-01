@@ -5,6 +5,12 @@ import { getSpaceUsageAnalyzeUsingPost } from '@/api/spaceAnalyzeController.ts'
 import { message } from 'ant-design-vue'
 import { formatSize } from '@/utils'
 
+/**
+ * 组件属性定义
+ * @property {boolean} queryAll - 是否查询全部空间使用情况，默认为 false
+ * @property {boolean} queryPublic - 是否查询公共空间使用情况，默认为 false
+ * @property {number} spaceId - 空间 ID，默认为 undefined
+ */
 interface Props {
   queryAll?: boolean
   queryPublic?: boolean
@@ -15,8 +21,17 @@ const props = withDefaults(defineProps<Props>(), {
   queryAll: false,
   queryPublic: false,
 })
+
+// 加载状态
 const loading = ref<boolean>(true)
+
+// 存储空间分析数据
 const data = ref<API.SpaceUsageAnalyzeResponse>({})
+
+/**
+ * 获取空间使用情况数据
+ * 调用后端接口获取当前空间的使用情况，并更新到 data 响应式变量中
+ */
 const fetchData = async () => {
   loading.value = true
   const res = await getSpaceUsageAnalyzeUsingPost({
@@ -27,34 +42,42 @@ const fetchData = async () => {
   if (res.data.code === 0 && res.data.data) {
     data.value = res.data.data
   } else {
-    message.error('获取数据失败', res.data.message)
+    message.error('获取数据失败' + res.data.message)
   }
   loading.value = false
 }
+
+// 监听 props 变化并重新获取数据
 watchEffect(() => {
   fetchData()
 })
-const options = {}
 </script>
 
 <template>
   <div class="spaceUsageAnalyze">
+    <!-- 使用 Flex 布局展示两个卡片 -->
     <a-flex gap="middle">
+      <!-- 存储空间使用情况卡片 -->
       <a-card title="存储空间" style="width: 50%">
         <div style="height: 320px; text-align: center">
+          <!-- 显示已使用空间和总空间大小 -->
           <h3>
             {{ formatSize(data.usedSize) }} /
             {{ data.maxSize ? formatSize(data.maxSize) : '无限制' }}
           </h3>
+          <!-- 显示存储空间使用比例的仪表盘进度条 -->
           <a-progress type="dashboard" :percent="data.sizeUsageRatio ?? 0" />
         </div>
       </a-card>
+      <!-- 图片数量使用情况卡片 -->
       <a-card title="图片数量" style="width: 50%">
         <div style="height: 320px; text-align: center">
+          <!-- 显示已使用图片数量和最大图片数量 -->
           <h3>
             {{ data.usedCount }} /
             {{ data.maxCount ?? '无限制' }}
           </h3>
+          <!-- 显示图片数量使用比例的仪表盘进度条 -->
           <a-progress type="dashboard" :percent="data.countUsageRatio ?? 0" />
         </div>
       </a-card>

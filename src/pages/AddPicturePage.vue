@@ -28,12 +28,19 @@ const formData = ref<API.PictureEditRequest>({
 const spaceId = computed(() => {
   return route.query?.spaceId as string | undefined
 })
-// 定义onSuccess回调函数的正确类型
+/**
+ * 上传成功回调函数
+ * @param newPicture 新上传的图片对象
+ */
 const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
   formData.value.name = newPicture.name
 }
 
+/**
+ * 表单提交处理函数
+ * @param values 表单数据
+ */
 const handleSubmit = async (values: any) => {
   const pictureId = picture.value?.id
   if (!pictureId) {
@@ -57,6 +64,9 @@ const tagOptions = ref<{ label: string; value: string }[]>([])
 // 原定义是string[]，但实际需要的是{label: string, value: string}[]类型
 const categoryOptions = ref<{ label: string; value: string }[]>([])
 
+/**
+ * 获取标签和分类选项数据
+ */
 const getTagCategoryOptions = async () => {
   try {
     const res = await listPictureTagCategoryUsingGet()
@@ -78,7 +88,9 @@ const getTagCategoryOptions = async () => {
   }
 }
 
-
+/**
+ * 获取已有图片信息（用于编辑场景）
+ */
 const getOldPicture = async () => {
   const pictureId = route.query?.id
   if (pictureId) {
@@ -101,28 +113,41 @@ onMounted(() => {
 })
 const imageCropperRef = ref()
 
-
+/**
+ * 触发图片裁剪功能
+ */
 const doEditPicture = () => {
   imageCropperRef.value?.showModal()
 }
+/**
+ * 图片裁剪成功回调函数
+ * @param newPicture 裁剪后的新图片对象
+ */
 const onCropSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
 }
 // AI 扩图弹窗引用
 const imageOutPaintingRef = ref()
 
-// AI 扩图
+/**
+ * 触发AI扩图功能
+ */
 const doImagePainting = () => {
-    imageOutPaintingRef.value.showModal()
+  imageOutPaintingRef.value.showModal()
 }
 
-// 编辑成功事件
+/**
+ * AI扩图成功回调函数
+ * @param newPicture 扩图后的新图片对象
+ */
 const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
 }
 const space = ref<API.SpaceVO>()
 
-// 获取空间信息
+/**
+ * 获取空间信息
+ */
 const fetchSpace = async () => {
   // 获取数据
   if (spaceId.value) {
@@ -138,26 +163,30 @@ const fetchSpace = async () => {
 watchEffect(() => {
   fetchSpace()
 })
-
 </script>
 
 <template>
   <div id="addPicturePage">
+    <!-- 页面标题，根据是否有id参数判断是编辑还是添加 -->
     <h2 style="margin-bottom: 16px">
       {{ route.query.id ? '编辑图片' : '添加图片' }}
     </h2>
+    <!-- 显示空间信息（如果存在spaceId） -->
     <a-typography-paragraph type="secondary" v-if="spaceId">
       保存至空间：
       <a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
     </a-typography-paragraph>
+    <!-- 上传方式切换标签页 -->
     <a-tabs v-model:activeKey="uploadType">
+      <!-- 文件上传标签页 -->
       <a-tab-pane key="file" tab="文件上传">
         <PictureUpload :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
+        <!-- 图片操作按钮栏 -->
         <div v-if="picture" class="edit-bar">
           <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
           <a-button :icon="h(FullscreenOutlined)" @click="doImagePainting">AI 扩图</a-button>
-
         </div>
+        <!-- 图片裁剪组件 -->
         <ImageCropper
           ref="imageCropperRef"
           :imageUrl="picture?.url"
@@ -166,12 +195,14 @@ watchEffect(() => {
           :onSuccess="onCropSuccess"
           :space="space"
         />
+        <!-- AI扩图组件 -->
         <ImageOutPainting
           ref="imageOutPaintingRef"
           :picture="picture"
           :spaceId="spaceId"
           :onSuccess="onImageOutPaintingSuccess"
         />
+        <!-- 图片信息表单 -->
         <a-form
           name="basic"
           v-if="picture"
@@ -218,12 +249,15 @@ watchEffect(() => {
           </a-form-item>
         </a-form>
       </a-tab-pane>
+      <!-- URL上传标签页 -->
       <a-tab-pane key="url" tab="url上传" force-render>
         <UrlPictureUpload :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
+        <!-- 图片操作按钮栏 -->
         <div v-if="picture" class="edit-bar">
           <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
         </div>
 
+        <!-- 图片裁剪组件 -->
         <ImageCropper
           ref="imageCropperRef"
           :imageUrl="picture?.url"
@@ -232,12 +266,14 @@ watchEffect(() => {
           :onSuccess="onCropSuccess"
           :space="space"
         />
+        <!-- AI扩图组件 -->
         <ImageOutPainting
           ref="imageOutPaintingRef"
           :picture="picture"
           :spaceId="picture?.spaceId"
           :onSuccess="onImageOutPaintingSuccess"
         />
+        <!-- 图片信息表单 -->
         <a-form
           name="basic"
           v-if="picture"

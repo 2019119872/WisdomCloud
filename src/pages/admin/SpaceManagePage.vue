@@ -3,9 +3,17 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { deleteSpaceUsingPost, listSpaceByPageUsingPost } from '@/api/spaceController.ts'
 import { message, Modal } from 'ant-design-vue' // 引入Modal组件用于确认对话框
 import dayjs from 'dayjs'
-import { SPACE_LEVEL_MAP, SPACE_LEVEL_OPTIONS, SPACE_TYPE_MAP, SPACE_TYPE_OPTIONS } from '@/constants/space.ts'
+import {
+  SPACE_LEVEL_MAP,
+  SPACE_LEVEL_OPTIONS,
+  SPACE_TYPE_MAP,
+  SPACE_TYPE_OPTIONS,
+} from '@/constants/space.ts'
 import { formatSize } from '@/utils'
 
+/**
+ * 表格列配置
+ */
 const columns = [
   {
     title: 'id',
@@ -25,7 +33,8 @@ const columns = [
     title: '空间级别',
     dataIndex: 'spaceLevel',
     width: 80,
-  },{
+  },
+  {
     title: '空间类别',
     dataIndex: 'spaceType',
     width: 100,
@@ -37,7 +46,7 @@ const columns = [
   {
     title: '用户 id',
     dataIndex: 'userId',
-    width:60,
+    width: 60,
     customHeaderCell: () => ({
       style: {
         textAlign: 'center',
@@ -58,9 +67,19 @@ const columns = [
   },
 ]
 
-// 修正数据列表类型定义（应为数组）
+/**
+ * 数据列表，存储从接口获取的空间数据
+ */
 const dataList = ref<API.Space[]>([])
+
+/**
+ * 总数据条数，用于分页显示
+ */
 const total = ref<number>(0)
+
+/**
+ * 搜索参数对象，包含分页、排序和筛选条件
+ */
 const searchParams = reactive<API.SpaceQueryRequest>({
   current: 1,
   pageSize: 10,
@@ -68,6 +87,14 @@ const searchParams = reactive<API.SpaceQueryRequest>({
   sortOrder: 'descend',
 })
 
+/**
+ * 获取空间数据列表
+ *
+ * 通过调用 listSpaceByPageUsingPost 接口获取分页数据，
+ * 并更新 dataList 和 total 的值。
+ *
+ * @returns {Promise<void>} 无返回值
+ */
 const fetchData = async () => {
   try {
     const res = await listSpaceByPageUsingPost({
@@ -85,10 +112,20 @@ const fetchData = async () => {
   }
 }
 
+/**
+ * 组件挂载时执行，初始化加载第一页数据
+ */
 onMounted(() => {
   fetchData()
 })
 
+/**
+ * 计算属性：表格分页配置
+ *
+ * 根据当前页码、每页条数和总条数生成分页器配置
+ *
+ * @returns {Object} 分页配置对象
+ */
 const pagination = computed(() => {
   return {
     current: searchParams.current,
@@ -99,18 +136,42 @@ const pagination = computed(() => {
   }
 })
 
+/**
+ * 表格分页或排序变化时触发
+ *
+ * 更新 searchParams 中的分页信息并重新请求数据
+ *
+ * @param {Object} page - 分页对象，包含 current 和 pageSize 属性
+ * @returns {void}
+ */
 const doTableChange = (page: any) => {
   searchParams.current = page.current
   searchParams.pageSize = page.pageSize
   fetchData()
 }
 
+/**
+ * 执行搜索操作
+ *
+ * 将当前页重置为第一页，并重新请求数据
+ *
+ * @returns {void}
+ */
 const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
 
-// 修改删除逻辑，添加确认对话框
+/**
+ * 删除指定的空间记录
+ *
+ * 显示确认对话框，用户确认后调用 deleteSpaceUsingPost 接口删除数据
+ * 删除成功后刷新列表
+ *
+ * @param {number} id - 要删除的空间ID
+ * @param {string} [name] - 空间名称（可选），用于提示信息展示
+ * @returns {Promise<void>} 无返回值
+ */
 const doDelete = async (id: number, name?: string) => {
   if (!id) {
     message.warning('缺少图片ID，无法删除')
@@ -152,22 +213,30 @@ const doDelete = async (id: number, name?: string) => {
 
 <template>
   <div id="spaceManagePage">
+    <!-- 页面标题与操作按钮区域 -->
     <a-flex justify="space-between">
       <h2>空间管理</h2>
       <a-space>
-          <a-button type="primary" href="/add_space" target="_blank">+ 创建空间</a-button>
-          <a-button type="primary" ghost href="/space_analyze?queryPublic=1" target="_blank">
-            分析公共图库
-          </a-button>
-          <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank">
-            分析全空间
-          </a-button>
+        <a-button type="primary" href="/add_space" target="_blank">+ 创建空间</a-button>
+        <a-button type="primary" ghost href="/space_analyze?queryPublic=1" target="_blank">
+          分析公共图库
+        </a-button>
+        <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank">
+          分析全空间
+        </a-button>
       </a-space>
     </a-flex>
+
+    <!-- 搜索表单区域 -->
     <div style="margin-bottom: 16px"></div>
     <a-form layout="inline" :model="searchParams" @finish="doSearch">
       <a-form-item label="空间名称">
-        <a-input style="max-width: 140px" v-model:value="searchParams.spaceName" placeholder="请输入空间名称" allow-clear />
+        <a-input
+          style="max-width: 140px"
+          v-model:value="searchParams.spaceName"
+          placeholder="请输入空间名称"
+          allow-clear
+        />
       </a-form-item>
       <a-form-item name="spaceLevel" label="空间级别">
         <a-select
@@ -194,6 +263,8 @@ const doDelete = async (id: number, name?: string) => {
         <a-button type="primary" html-type="submit">搜索</a-button>
       </a-form-item>
     </a-form>
+
+    <!-- 表格展示区域 -->
     <a-divider />
     <a-table
       :columns="columns"
@@ -225,10 +296,14 @@ const doDelete = async (id: number, name?: string) => {
             <a-button type="link" size="small" :href="`/add_space?id=${record.id}`" target="_blank"
               >编辑
             </a-button>
-            <a-button type="link" size="small" :href="`/space_analyze?spaceId=${record.id}`" target="_blank">
+            <a-button
+              type="link"
+              size="small"
+              :href="`/space_analyze?spaceId=${record.id}`"
+              target="_blank"
+            >
               分析
             </a-button>
-
           </a-space>
         </template>
       </template>
