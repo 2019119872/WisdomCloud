@@ -7,7 +7,7 @@ import { message } from 'ant-design-vue'
  */
 const myAxios = axios.create({
   // baseURL: "",
-  baseURL: 'http://localhost:8123',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8123',
   timeout: 60000,
   withCredentials: true,
 })

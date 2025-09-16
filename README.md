@@ -1,117 +1,117 @@
-# 智云图库 (Wisdom Cloud Library)
+# Wisdom Cloud Library
+
+智慧云图库 - 一个功能丰富的图片管理平台
 
 ## 项目介绍
 
-智云图库是一个基于Vue3 + SpringBoot开发的现代化智能图床系统，具备AI图片处理、实时协作编辑、空间管理分析等核心功能。项目采用前后端分离架构，前端使用Vue3 + TypeScript + Vite构建，后端采用SpringBoot + MyBatis Plus + PostgreSQL技术栈。
+Wisdom Cloud Library 是一个基于 Vue3 + Spring Boot 的全栈图片管理平台，支持图片上传、分类、搜索、AI处理等功能。
 
-### 项目模块
+## 技术栈
 
-1. **图片管理模块**：支持图片上传、分类、标签、搜索、详情展示等基础功能
-2. **AI处理模块**：集成AI图片处理能力，包括智能扩图、图片优化等
-3. **协作编辑模块**：支持多人实时协作编辑图片，具备WebSocket实时通信能力
-
-### 技术栈
-
-**前端**：
-- Vue 3 (Composition API)
+### 前端
+- Vue 3
 - TypeScript
 - Vite
 - Ant Design Vue
-- ECharts (数据可视化)
-- WebSocket (实时协作)
+- Axios
+- Vue Router
+- Pinia
 
-**后端**：
-- SpringBoot
+### 后端
+- Spring Boot 2.7.6
 - MyBatis Plus
-- Redis (缓存)
-- cos (对象存储)
+- MySQL
+- Redis
+- Sa-Token 权限认证
+- ShardingSphere 分库分表
+- 腾讯云 COS 对象存储
+- 阿里云 AI
 
-## 核心功能
+## 功能特性
 
-### 1. AI图片处理
-- AI智能扩图：基于深度学习算法自动扩展图片边界
-- 图片优化：自动调整图片质量与尺寸
-- 智能标签：自动识别图片内容并生成标签
+- 用户注册登录
+- 图片上传与管理
+- 图片分类与标签
+- 图片搜索（支持标签、颜色、内容搜索）
+- AI 图片处理（抠图、外延）
+- 空间管理（个人/团队空间）
+- 权限控制
+- 数据统计分析
 
-### 2. 实时协作编辑
-- 多人实时协作：支持多人同时编辑同一张图片
-- 操作同步：通过WebSocket实现实时操作同步
-- 光标追踪：实时显示其他用户的编辑光标位置
+## 本地开发
 
-### 3. 空间管理分析
-- 空间统计：存储空间使用情况分析
-- 图片分类：按标签、分类等维度统计图片
-- 数据可视化：使用ECharts展示各类分析图表
-
-## 项目结构
-
-```
-wisdom-cloud-library/
-├── src/
-│   ├── api/           # 接口请求
-│   ├── assets/        # 静态资源
-│   ├── components/    # 组件
-│   ├── constants/     # 常量定义
-│   ├── router/        # 路由配置
-│   ├── store/         # 状态管理
-│   ├── utils/         # 工具函数
-│   ├── views/         # 页面视图
-│   └── App.vue        # 根组件
-├── public/            # 公共资源
-├── package.json       # 依赖配置
-└── vite.config.ts     # 构建配置
-```
-### 环境要求
-- Node.js >= 16.0.0
-- npm >= 8.0.0
-- Java >= 17
-- PostgreSQL >= 13.0
-- Redis >= 6.0
-- MinIO
-
-### 前端运行
+### 前端
 ```bash
 # 安装依赖
 npm install
 
-# 开发运行 (默认端口: 5174)
+# 启动开发服务器
 npm run dev
 
-# 构建生产环境
+# 构建项目
 npm run build
+
+# 预览构建结果
+npm run preview
 ```
 
-项目启动后访问: http://localhost:5174/
+### 后端
+```bash
+# 编译项目
+./mvnw package
 
-## 功能模块详解
+# 运行项目
+java -jar target/yu-picture-backend-0.0.1-SNAPSHOT.jar
+```
 
-### 图片管理
-- 支持单张和批量图片上传
-- 图片分类管理
-- 标签系统
-- 搜索功能
+## 部署
 
-### AI处理
-- AI扩图算法集成
-- 图片质量优化
-- 智能内容识别
+请参考 [DEPLOYMENT.md](DEPLOYMENT.md) 文件获取详细的部署指南。
 
-### 协作编辑
-- 实时通信机制
-- 操作同步
-- 光标位置追踪
+## 环境配置
 
-### 空间分析
-- 存储空间统计
-- 图片分类分析
-- 数据可视化展示
+### 前端环境变量
+- VITE_API_BASE_URL: 后端API地址
 
-## 项目亮点
+### 后端环境变量
+- DATABASE_URL: 数据库连接URL
+- DATABASE_USERNAME: 数据库用户名
+- DATABASE_PASSWORD: 数据库密码
+- REDIS_HOST: Redis主机地址
+- REDIS_PORT: Redis端口
 
-1. **现代化技术栈**：采用Vue3 + TypeScript + Vite构建前端，SpringBoot构建后端
-2. **AI能力集成**：集成AI图片处理功能，提升用户体验
-3. **实时协作**：基于WebSocket实现实时协作编辑功能
-4. **数据可视化**：使用ECharts实现丰富的数据分析展示
-5. **响应式设计**：适配不同设备屏幕尺寸
+## 目录结构
+
+### 前端
+```
+src/
+├── api/           # API 接口封装
+├── assets/        # 静态资源
+├── components/    # 公共组件
+├── constants/     # 常量定义
+├── layouts/       # 页面布局
+├── pages/         # 页面组件
+├── router/        # 路由配置
+├── stores/        # 状态管理
+└── utils/         # 工具函数
+```
+
+### 后端
+```
+src/main/java/com/yupi/yupicturebackend/
+├── annotation/    # 自定义注解
+├── aop/           # AOP 切面
+├── api/           # 第三方API调用
+├── common/        # 通用类
+├── config/        # 配置类
+├── constant/      # 常量定义
+├── controller/    # 控制器
+├── exception/     # 异常处理
+├── manager/       # 业务管理层
+├── mapper/        # 数据访问层
+├── model/         # 数据模型
+├── service/       # 业务逻辑层
+└── utils/         # 工具类
+```
 
 

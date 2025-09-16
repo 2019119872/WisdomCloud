@@ -17,7 +17,7 @@ import SpaceUserManagePage from '@/pages/admin/SpaceUserManagePage.vue'
 import UserDetailsPage from '@/pages/user/userDetailsPage.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL || '/'),
   routes: [
     {
       path: '/',
